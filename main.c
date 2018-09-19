@@ -3,6 +3,8 @@
 #include "tiles.c"
 #include "map.c"
 #include "map2.c"
+#include "map3.c"
+#include "map4.c"
 #include "rand.h"
 
 UINT8 cur[2];
@@ -54,17 +56,17 @@ const UWORD bkg_palette[] =
 
 UINT8 y_array[] =
 {
-	0,0,0,1,
-	0,0,1,0,
-	0,1,0,0,
-	1,0,0,0
+	3,6,5,0,
+	2,1,0,5,
+	1,0,2,4,
+	0,3,4,6
 };
 
 UINT8 b_array[] =
 {
-	1,0,0,0,
-	0,0,0,0,
-	0,0,0,0
+	0,2,3,4,
+	5,6,7,8,
+	9,10,11,12
 };
 
 UINT8 g_array[] =
@@ -89,6 +91,7 @@ void checkInput();
 void updateSwitches();
 void rollDice();
 void shuffle(unsigned char *array, UINT8 n);
+void main_int();
 
 void main() {
 	init();
@@ -96,6 +99,7 @@ void main() {
 	while(!joypad()){seed++; if(seed>=255)seed=1;} //generate the seed based on when you hit a button
 	initrand(seed);
 	rollDice();
+	main_int();
 	while(1) {
 		checkInput();				// Check for user input
 		updateSwitches();			// Turn on screen
@@ -105,21 +109,28 @@ void main() {
 }
 
 void init() {
-	curDel = 0; //set the cursor lock
+	curDel = 1; //set the cursor lock
 	set_bkg_palette(0, 8, bkg_palette); //load the pallets
 	VBK_REG = 1; //switch to color map
-	set_bkg_tiles(0,0,20,18,cgbmap1); //load color map
+	set_bkg_tiles(0,0,20,18,cgbmap2); //load color map
 	VBK_REG = 0; //switch to regular map
 	DISPLAY_ON;						// Turn on the display
-	set_bkg_data(0, 96, TileLabel);		// Load tiles into background memory
+	set_bkg_data(0, 127, TileLabel);		// Load tiles into background memory
 	
-	set_bkg_tiles(0,0,20,18,map1); //load starting screen
+	set_bkg_tiles(0,0,20,18,map2); //load starting screen
 	cur[0] = 0; //set the cursor positions
 	cur[1] = 0;
 	infoTrack[0] = 1; //set the current round to 1
 	infoTrack[1] = 0; //set the number of +1 to 0
 	infoTrack[2] = 0; //set the number of rerolls to 0
 	/*rollDice();*/
+}
+
+void main_int() {
+	VBK_REG = 1; //switch to color map
+	set_bkg_tiles(0,0,20,18,cgbmap1); //load color map
+	VBK_REG = 0; //switch to regular map
+	set_bkg_tiles(0,0,20,18,map1); //load starting screen
 }
 
 void updateSwitches() { //show just the background for now, will need a sprite and window eventually
