@@ -54,33 +54,33 @@ const UWORD bkg_palette[] =
 
 UINT8 y_array[] =
 {
-	0,0,0,1
-	0,0,1,0
-	0,1,0,0
+	0,0,0,1,
+	0,0,1,0,
+	0,1,0,0,
 	1,0,0,0
-}
+};
 
 UINT8 b_array[] =
 {
-	1,0,0,0
+	1,0,0,0,
+	0,0,0,0,
 	0,0,0,0
-	0,0,0,0
-}
+};
 
 UINT8 g_array[] =
 {
 	0,0,0,0,0,0,0,0,0,0,0
-}
+};
 
 UINT8 o_array[] =
 {
 	0,0,0,0,0,0,0,0,0,0,0
-}
+};
 
 UINT8 p_array[] =
 {
 	0,0,0,0,0,0,0,0,0,0,0
-}
+};
 
 
 
@@ -95,7 +95,7 @@ void main() {
 
 	while(!joypad()){seed++; if(seed>=255)seed=1;} //generate the seed based on when you hit a button
 	initrand(seed);
-	
+	rollDice();
 	while(1) {
 		checkInput();				// Check for user input
 		updateSwitches();			// Turn on screen
@@ -212,8 +212,10 @@ void checkInput() {
 			}
 			moveCursor();
 		}
-		if (joypad() & J_START) {
-			rollDice();
+		if (joypad() & J_A) {
+			if (cur[0] == 2 && cur[1] == 5) {
+				rollDice();
+			}
 			curDel = 1;
 		}
 	}
