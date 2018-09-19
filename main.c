@@ -12,6 +12,11 @@ UINT8 temp;
 UINT8 temp2;
 UINT8 temp3;
 UINT8 temp4;
+UINT8 temp5;
+UINT8 temp6;
+UINT8 temp7;
+UINT8 temp8;
+UINT8 temp9;
 UINT8 curDel;
 UINT8 infoTrack[3];
 unsigned char tempArray[];
@@ -24,7 +29,27 @@ unsigned char diceArray[] =
 
 unsigned char diceValues[] = 
 {
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+	0x00,0x00,0x00,0x00,0x00,0x00
+};
+
+unsigned char usedDiceArray[] = 
+{
+	0x48,0x48,0x48
+};
+
+unsigned char usedDiceTiles[] =
+{
+	0x28,0x3C,0x50
+};
+
+unsigned char usedDicePalettes[] = 
+{
+	0x00,0x00,0x00
+};
+
+unsigned char usedDiceValues[] =
+{
+	0xFF,0xFF,0xFF
 };
 
 unsigned char dicePalettes[] = 
@@ -92,6 +117,9 @@ void updateSwitches();
 void rollDice();
 void shuffle(unsigned char *array, UINT8 n);
 void main_int();
+void pickDie();
+void newRound();
+void updateBG();
 
 void main() {
 	init();
@@ -99,7 +127,7 @@ void main() {
 	while(!joypad()){seed++; if(seed>=255)seed=1;} //generate the seed based on when you hit a button
 	initrand(seed);
 	rollDice();
-	main_int();
+	updateBG();
 	while(1) {
 		checkInput();				// Check for user input
 		updateSwitches();			// Turn on screen
@@ -122,15 +150,8 @@ void init() {
 	cur[1] = 0;
 	infoTrack[0] = 1; //set the current round to 1
 	infoTrack[1] = 0; //set the number of +1 to 0
-	infoTrack[2] = 0; //set the number of rerolls to 0
+	infoTrack[2] = 1; //set the number of rerolls to 0
 	/*rollDice();*/
-}
-
-void main_int() {
-	VBK_REG = 1; //switch to color map
-	set_bkg_tiles(0,0,20,18,cgbmap1); //load color map
-	VBK_REG = 0; //switch to regular map
-	set_bkg_tiles(0,0,20,18,map1); //load starting screen
 }
 
 void updateSwitches() { //show just the background for now, will need a sprite and window eventually
@@ -227,6 +248,13 @@ void checkInput() {
 			if (cur[0] == 2 && cur[1] == 5) {
 				rollDice();
 			}
+			else if (cur[0] == 0){
+				pickDie();
+			}
+			curDel = 1;
+		}
+		if (joypad() & J_START) {
+			newRound();
 			curDel = 1;
 		}
 	}
@@ -244,10 +272,38 @@ void rollDice() {
 			map1[temp2] = diceArray[r1];
 			diceValues[temp] = r1;
 		}
-	VBK_REG = 1;
-	set_bkg_tiles(0,0,20,18,cgbmap1);
-	VBK_REG = 0;
-	set_bkg_tiles(0,0,20,18,map1);
+	updateBG();
+}
+
+void pickDie() {
+	temp = (cur[0]+17)+(20*(cur[1]+1));
+	temp3 = 0;
+	temp5 = 0;
+	for (temp2 = 0; temp2 < 3; temp2++){
+		if (usedDiceValues[temp2] == 0xFF) {
+			temp4 = 39+(20*temp2);
+			map1[temp4] = map1[temp];
+			cgbmap1[temp4] = cgbmap1[temp];
+			usedDiceValues[temp2] = diceValues[cur[1]];
+			map1[temp] = 0x48;
+			cgbmap1[temp] = 0x00;
+			
+			for (temp5 = 0; temp5 < 6; temp5++)
+			{
+				if (diceValues[temp5] < diceValues[cur[1]]){
+					map1[diceTiles[temp5]] = 0x48;
+					cgbmap1[diceTiles[temp5]] = 0x00;
+				}
+			}
+			
+			
+			updateBG();
+			return;
+		}
+		else {
+			temp5++;
+		}
+	}
 }
 
 void shuffle(unsigned char *array, UINT8 n) {    
@@ -261,4 +317,29 @@ void shuffle(unsigned char *array, UINT8 n) {
 		array[r1] = array[r2];
 		array[r2] = temp2;
 	}
+}
+
+void newRound(){
+	/*map1[0] = 0x15;*/
+	for (temp2 = 0; temp2 < 3; temp2++){
+		temp4 = 39+(20*temp2);
+		map1[temp4] = 0x48;
+		cgbmap1[temp4] = 0x00;
+		usedDiceValues[temp2] = 0xFF;
+	}
+	temp3 = infoTrack[0]-1;
+	map1[temp3+340] = 0x15;
+
+
+
+	infoTrack[0]++;
+	rollDice();
+	updateBG();
+}
+
+void updateBG(){
+	VBK_REG = 1;
+	set_bkg_tiles(0,0,20,18,cgbmap1);
+	VBK_REG = 0;
+	set_bkg_tiles(0,0,20,18,map1);
 }
