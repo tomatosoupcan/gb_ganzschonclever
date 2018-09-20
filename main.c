@@ -105,7 +105,7 @@ UINT8 b_array[] =
 
 UINT8 g_array[] =
 {
-	0,0,0,0,0,0,0,0,0,0,0
+	1,2,3,4,5,1,2,3,4,5,6
 };
 
 UINT8 o_array[] =
@@ -131,6 +131,7 @@ void newRound();
 void updateBG();
 int die2Num(unsigned char die);
 int tile2Num(unsigned char tile);
+void reroll();
 
 void main() {
 	init();
@@ -267,7 +268,10 @@ void checkInput() {
 			temp = (cur[0]+17)+(20*(cur[1]+1));
 			if (joypad() & J_A) {
 				if (cur[0] == 2 && cur[1] == 5) {
-					rollDice();
+					reroll();
+				}
+				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72) {
+					return;
 				}
 				
 				else if (cur[0] == 0 && map1[temp] != 0x48){
@@ -350,6 +354,7 @@ void checkInput() {
 					move_sprite(0, rcur[0], rcur[1]);
 					map1[temp] = 0x14;
 					whitemode = 0;
+					reroll();
 					updateBG();
 				}
 				//end yellow handling
@@ -425,12 +430,27 @@ void checkInput() {
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
 					whitemode = 0;
+					reroll();
 					updateBG();
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 4) { //green
+		else if (cgbmap1[temp] == 4 || whitemode == 4) { //green
+			if (rcur[0] == 0) {
+				rcur[0] = 88;
+				rcur[1] = 24;
+			}
 			for (temp2 = 0; temp2 < 11; temp2++){
+				if (g_array[temp2] > die2Num(temp)) {
+					if (whitemode == 4) {
+						curDel = 0;
+						whitemode = 0;
+						return;
+					}
+					curDel = 0;
+					selectmode = 0;
+					return;
+				}
 				if (map1[183+temp2] != 0x16 && map1[183+temp2] != 0x17 && map1[183+temp2] != 0x18 && map1[183+temp2] != 0x19 && map1[183+temp2] != 0x1A && map1[183+temp2] != 0x1B){
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
 					switch(map1[temp3]) {
@@ -456,14 +476,22 @@ void checkInput() {
 					map1[temp2+183] = temp10;
 					cgbmap1[temp2+183] = 0x00;
 					whitemode = 0;
+					HIDE_SPRITES;
+					rcur[0] = 0;
+					rcur[1] = 0;
 					updateBG();
 					pickDie();
+					reroll();
 					selectmode = 0;
 					return;
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 2) { //orange
+		else if (cgbmap1[temp] == 2 || whitemode == 2) { //orange
+			if (rcur[0] == 0) {
+				rcur[0] = 88;
+				rcur[1] = 24;
+			}
 			for (temp2 = 0; temp2 < 11; temp2++){
 				if (map1[243+temp2] != 0x16 && map1[243+temp2] != 0x17 && map1[243+temp2] != 0x18 && map1[243+temp2] != 0x19 && map1[243+temp2] != 0x1A && map1[243+temp2] != 0x1B){
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
@@ -490,14 +518,22 @@ void checkInput() {
 					map1[temp2+243] = temp10;
 					cgbmap1[temp2+243] = 0x00;
 					whitemode = 0;
+					HIDE_SPRITES;
+					rcur[0] = 0;
+					rcur[1] = 0;
 					updateBG();
 					pickDie();
+					reroll();
 					selectmode = 0;
 					return;
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 3) { //purple
+		else if (cgbmap1[temp] == 3 || whitemode == 3) { //purple
+			if (rcur[0] == 0) {
+				rcur[0] = 88;
+				rcur[1] = 24;
+			}
 			for (temp2 = 0; temp2 < 11; temp2++){
 				if (map1[303+temp2] != 0x16 && map1[303+temp2] != 0x17 && map1[303+temp2] != 0x18 && map1[303+temp2] != 0x19 && map1[303+temp2] != 0x1A && map1[303+temp2] != 0x1B){
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
@@ -524,8 +560,12 @@ void checkInput() {
 					map1[temp2+303] = temp10;
 					cgbmap1[temp2+303] = 0x00;
 					whitemode = 0;
+					HIDE_SPRITES;
+					rcur[0] = 0;
+					rcur[1] = 0;
 					updateBG();
 					pickDie();
+					reroll();
 					selectmode = 0;
 					return;
 				}
@@ -610,117 +650,15 @@ void checkInput() {
 							break;
 						case 4 : //green
 							whitemode = 4;
-							for (temp2 = 0; temp2 < 11; temp2++){
-								if (map1[183+temp2] != 0x16 && map1[183+temp2] != 0x17 && map1[183+temp2] != 0x18 && map1[183+temp2] != 0x19 && map1[183+temp2] != 0x1A && map1[183+temp2] != 0x1B){
-									temp3 = (cur[0]+17)+(20*(cur[1]+1));
-									switch(map1[temp3]) {
-										case 0x40 :
-											temp10 = 0x16;
-											break;
-										case 0x41 :
-											temp10 = 0x17;
-											break;
-										case 0x42 :
-											temp10 = 0x18;
-											break;
-										case 0x43 :
-											temp10 = 0x19;
-											break;
-										case 0x44 :
-											temp10 = 0x1A;
-											break;
-										case 0x45 :
-											temp10 = 0x1B;
-											break;
-									}
-									map1[temp2+183] = temp10;
-									cgbmap1[temp2+183] = 0x00;
-									whitemode = 0;
-									updateBG();
-									pickDie();
-									rcur[0] = 0;
-									rcur[1] = 1;
-									HIDE_SPRITES;
-									selectmode = 0;
-									return;
-								}
-							}
+							checkInput();
 							break;
 						case 2 : //orange
-							for (temp2 = 0; temp2 < 11; temp2++){
-								if (map1[243+temp2] != 0x16 && map1[243+temp2] != 0x17 && map1[243+temp2] != 0x18 && map1[243+temp2] != 0x19 && map1[243+temp2] != 0x1A && map1[243+temp2] != 0x1B){
-									temp3 = (cur[0]+17)+(20*(cur[1]+1));
-									switch(map1[temp3]) {
-										case 0x40 :
-											temp10 = 0x16;
-											break;
-										case 0x41 :
-											temp10 = 0x17;
-											break;
-										case 0x42 :
-											temp10 = 0x18;
-											break;
-										case 0x43 :
-											temp10 = 0x19;
-											break;
-										case 0x44 :
-											temp10 = 0x1A;
-											break;
-										case 0x45 :
-											temp10 = 0x1B;
-											break;
-									}
-									map1[temp2+243] = temp10;
-									cgbmap1[temp2+243] = 0x00;
-									whitemode = 0;
-									updateBG();
-									pickDie();
-									rcur[0] = 0;
-									rcur[1] = 1;
-									HIDE_SPRITES;
-									selectmode = 0;
-									return;
-								}
-							}
 							whitemode = 2;
+							checkInput();
 							break;
 						default : //purple
-							for (temp2 = 0; temp2 < 11; temp2++){
-								if (map1[303+temp2] != 0x16 && map1[303+temp2] != 0x17 && map1[303+temp2] != 0x18 && map1[303+temp2] != 0x19 && map1[303+temp2] != 0x1A && map1[303+temp2] != 0x1B){
-									temp3 = (cur[0]+17)+(20*(cur[1]+1));
-									switch(map1[temp3]) {
-										case 0x40 :
-											temp10 = 0x16;
-											break;
-										case 0x41 :
-											temp10 = 0x17;
-											break;
-										case 0x42 :
-											temp10 = 0x18;
-											break;
-										case 0x43 :
-											temp10 = 0x19;
-											break;
-										case 0x44 :
-											temp10 = 0x1A;
-											break;
-										case 0x45 :
-											temp10 = 0x1B;
-											break;
-									}
-									map1[temp2+303] = temp10;
-									cgbmap1[temp2+303] = 0x00;
-									whitemode = 0;
-									updateBG();
-									pickDie();
-									rcur[0] = 0;
-									rcur[1] = 1;
-									selectmode = 0;
-									HIDE_SPRITES;
-									return;
-								}
-							}
-							whitemode = 1;
+							whitemode = 3;
+							checkInput();
 							break;
 					}
 				}
@@ -728,6 +666,70 @@ void checkInput() {
 		}
 		
 	}
+}
+
+void reroll() {
+	temp11 = 0x02;
+	for (temp = 0; temp < 6; temp++)
+	{
+		tempint = (rand() % 6);
+		if (tempint < 0) {tempint = tempint*-1;}
+		temp2 = diceTiles[temp];
+		if (map1[temp2] != 72) {
+			cgbmap1[temp2] = diceAvaPalettes[temp];
+			map1[temp2] = diceArray[tempint];
+			diceValues[temp] = tempint;
+		}
+	}
+	for (temp = 0; temp < 6; temp++)
+		{
+			if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01)
+			{
+				temp11 = temp11 + diceValues[temp];
+			}
+		}
+	bwStore = temp11;
+	switch (temp11){
+		case 2 :
+			temp11 = 38;
+			break;
+		case 3 :
+			temp11 = 78;
+			break;
+		case 4 :
+			temp11 = 39;
+			break;
+		case 5 :
+			temp11 = 79;
+			break;
+		case 6 :
+			temp11 = 80;
+			break;
+		case 7 :
+			temp11 = 40;
+			break;
+		case 8 :
+			temp11 = 114;
+			break;
+		case 9 :
+			temp11 = 115;
+			break;
+		case 10 :
+			temp11 = 82;
+			break;
+		case 11 :
+			temp11 = 41;
+			break;
+		case 12 :
+			temp11 = 116;
+			break;
+		default :
+			break;
+	}
+	map1[29] = temp11;
+	cgbmap1[29] = 0x01;
+	
+	updateBG();
 }
 
 void rollDice() {
