@@ -21,6 +21,7 @@ UINT8 temp7;
 UINT8 temp8;
 UINT8 temp9;
 UINT8 whitemode;
+UINT8 bwStore;
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
@@ -128,6 +129,8 @@ void main_int();
 void pickDie();
 void newRound();
 void updateBG();
+int die2Num(unsigned char die);
+int tile2Num(unsigned char tile);
 
 void main() {
 	init();
@@ -332,7 +335,12 @@ void checkInput() {
 					curDel = 1;
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
+				temp3 = (cur[0]+17)+(20*(cur[1]+1));
 				if (joypad() & J_A && map1[temp2] != 0x14) {
+					if (die2Num(temp3) != tile2Num(temp2)){
+						curDel = 0;
+						return;
+					}
 					HIDE_SPRITES;
 					pickDie();
 					selectmode = 0;
@@ -404,6 +412,10 @@ void checkInput() {
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
 				if (joypad() & J_A && map1[temp2] != 0x14) {
+					if (bwStore != tile2Num(temp2)){
+						curDel = 0;
+						return;
+					}
 					HIDE_SPRITES;
 					pickDie();
 					selectmode = 0;
@@ -560,10 +572,10 @@ void checkInput() {
 					curDel = 1;
 				}
 				if(joypad() & J_DOWN) {
-					if (rcur[1] == 16) {
+					if (rcur[1] == 16 && rcur[0] == 8) {
 						rcur[1]+=64;
 					}
-					else {
+					else if (rcur[0] == 8) {
 						rcur[1]+=24;
 					}
 					if (rcur[1] > 128) {
@@ -738,6 +750,7 @@ void rollDice() {
 				temp11 = temp11 + diceValues[temp];
 			}
 		}
+	bwStore = temp11;
 	switch (temp11){
 		case 2 :
 			temp11 = 38;
@@ -847,4 +860,91 @@ void updateBG(){
 	set_bkg_tiles(0,0,20,18,cgbmap1);
 	VBK_REG = 0;
 	set_bkg_tiles(0,0,20,18,map1);
+}
+
+int tile2Num(unsigned char tile){
+	switch (map1[tile]){
+		case 22:
+			return 1;
+			break;
+		case 23:
+			return 2;
+			break;
+		case 24:
+			return 3;
+			break;
+		case 25:
+			return 4;
+			break;
+		case 26:
+			return 5;
+			break;
+		case 27:
+			return 6;
+			break;
+		case 29:
+			return 7;
+			break;
+		case 30:
+			return 8;
+			break;
+		case 31:
+			return 9;
+			break;
+		case 32:
+			return 10;
+			break;
+		case 33:
+			return 11;
+			break;
+		case 34:
+			return 12;
+			break;
+	}
+}
+
+int die2Num(unsigned char die){
+	switch (map1[die]) {
+		case 64:
+			return 1;
+			break;
+		case 65:
+			return 2;
+			break;
+		case 66:
+			return 3;
+			break;
+		case 67:
+			return 4;
+			break;
+		case 68:
+			return 5;
+			break;
+		case 69:
+			return 6;
+			break;
+	}
+}
+
+int bw2Num(unsigned char die){
+	switch (map1[die]) {
+		case 64:
+			return 1;
+			break;
+		case 65:
+			return 2;
+			break;
+		case 66:
+			return 3;
+			break;
+		case 67:
+			return 4;
+			break;
+		case 68:
+			return 5;
+			break;
+		case 69:
+			return 6;
+			break;
+	}
 }
