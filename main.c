@@ -25,6 +25,7 @@ UINT8 bwStore;
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
+UINT8 prevPurp;
 UINT8 curDel;
 UINT8 infoTrack[3];
 UINT8 selectmode = 0;
@@ -537,6 +538,20 @@ void checkInput() {
 			for (temp2 = 0; temp2 < 11; temp2++){
 				if (map1[303+temp2] != 0x16 && map1[303+temp2] != 0x17 && map1[303+temp2] != 0x18 && map1[303+temp2] != 0x19 && map1[303+temp2] != 0x1A && map1[303+temp2] != 0x1B){
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
+					if (temp2 == 0 || prevPurp < die2Num(temp3) || prevPurp == 6) {
+						prevPurp = die2Num(temp3);
+					}
+					else {
+						if (whitemode == 3) {
+							curDel = 0;
+							whitemode = 0;
+							return;
+						}
+						curDel = 0;
+						selectmode = 0;
+						return;
+					}
+
 					switch(map1[temp3]) {
 						case 0x40 :
 							temp10 = 0x16;
