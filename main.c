@@ -21,7 +21,9 @@ UINT8 temp7;
 UINT8 temp8;
 UINT8 temp9;
 UINT8 whitemode;
+int tempint;
 unsigned char temp10;
+unsigned char temp11;
 UINT8 curDel;
 UINT8 infoTrack[3];
 UINT8 selectmode = 0;
@@ -719,6 +721,7 @@ void checkInput() {
 void rollDice() {
 	//Roll the colors and dice
 	shuffle(diceAvaPalettes, 6);
+	temp11 = 0x02;
 	for (temp = 0; temp < 6; temp++)
 		{
 			int r1 = (rand() % 6);
@@ -728,6 +731,52 @@ void rollDice() {
 			map1[temp2] = diceArray[r1];
 			diceValues[temp] = r1;
 		}
+	for (temp = 0; temp < 6; temp++)
+		{
+			if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01)
+			{
+				temp11 = temp11 + diceValues[temp];
+			}
+		}
+	switch (temp11){
+		case 2 :
+			temp11 = 38;
+			break;
+		case 3 :
+			temp11 = 78;
+			break;
+		case 4 :
+			temp11 = 39;
+			break;
+		case 5 :
+			temp11 = 79;
+			break;
+		case 6 :
+			temp11 = 80;
+			break;
+		case 7 :
+			temp11 = 40;
+			break;
+		case 8 :
+			temp11 = 114;
+			break;
+		case 9 :
+			temp11 = 115;
+			break;
+		case 10 :
+			temp11 = 82;
+			break;
+		case 11 :
+			temp11 = 41;
+			break;
+		case 12 :
+			temp11 = 116;
+			break;
+		default :
+			break;
+	}
+	map1[29] = temp11;
+	cgbmap1[29] = 0x01;
 	updateBG();
 }
 
