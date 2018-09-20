@@ -20,6 +20,7 @@ UINT8 temp6;
 UINT8 temp7;
 UINT8 temp8;
 UINT8 temp9;
+UINT8 whitemode;
 unsigned char temp10;
 UINT8 curDel;
 UINT8 infoTrack[3];
@@ -278,7 +279,7 @@ void checkInput() {
 	}
 	else if (selectmode == 1){
 		temp = (cur[0]+17)+(20*(cur[1]+1));
-		if (cgbmap1[temp] == 5) { //yellow
+		if (cgbmap1[temp] == 5 || whitemode == 5) { //yellow
 			if (curDel == 0) {
 				//Begin Yellow Handling
 				if (rcur[0] == 0) {
@@ -325,6 +326,7 @@ void checkInput() {
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
 					selectmode = 0;
+					whitemode = 0;
 					curDel = 1;
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
@@ -337,12 +339,13 @@ void checkInput() {
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
 					map1[temp] = 0x14;
+					whitemode = 0;
 					updateBG();
 				}
 				//end yellow handling
 			}
 		}
-		else if (cgbmap1[temp] == 1) { //blue
+		else if (cgbmap1[temp] == 1 || whitemode == 1) { //blue
 			if (curDel == 0) {
 				if (rcur[0] == 0) {
 					rcur[0] = 88;
@@ -394,6 +397,7 @@ void checkInput() {
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
 					selectmode = 0;
+					whitemode = 0;
 					curDel = 1;
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
@@ -406,6 +410,7 @@ void checkInput() {
 					rcur[0] = 0;
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
+					whitemode = 0;
 					updateBG();
 				}
 			}
@@ -436,6 +441,7 @@ void checkInput() {
 					}
 					map1[temp2+183] = temp10;
 					cgbmap1[temp2+183] = 0x00;
+					whitemode = 0;
 					updateBG();
 					pickDie();
 					selectmode = 0;
@@ -469,6 +475,7 @@ void checkInput() {
 					}
 					map1[temp2+243] = temp10;
 					cgbmap1[temp2+243] = 0x00;
+					whitemode = 0;
 					updateBG();
 					pickDie();
 					selectmode = 0;
@@ -502,6 +509,7 @@ void checkInput() {
 					}
 					map1[temp2+303] = temp10;
 					cgbmap1[temp2+303] = 0x00;
+					whitemode = 0;
 					updateBG();
 					pickDie();
 					selectmode = 0;
@@ -509,6 +517,202 @@ void checkInput() {
 				}
 			}
 		}
+		else if (cgbmap1[temp] == 0) { //white
+			if (curDel == 0) {
+				if (rcur[0] == 0) {
+					rcur[0] = 8;
+					rcur[1] = 16;
+					}
+				move_sprite(0, rcur[0], rcur[1]);
+				SHOW_SPRITES;
+				if(joypad() & J_RIGHT) {
+					if (rcur[0] != 72) {
+						rcur[0]+=64;
+						if (rcur[1] != 16) {
+							rcur[0] = 8;
+						}
+					}
+					move_sprite(0, rcur[0], rcur[1]);
+					curDel = 1;
+				}
+				if(joypad() & J_LEFT) {
+					if (rcur[0] != 8) {
+						rcur[0]-=64;
+						if (rcur[0] < 8) {
+							rcur[0] = 64;
+						}
+						move_sprite(0, rcur[0], rcur[1]);
+						curDel = 1;
+					}
+				}
+				if(joypad() & J_UP) {
+					if (rcur[1] != 16) {
+						if (rcur[1] == 80) {
+						rcur[1]-=64;
+						}
+						else {
+							rcur[1]-=24;
+						}
+					}
+					move_sprite(0, rcur[0], rcur[1]);
+					curDel = 1;
+				}
+				if(joypad() & J_DOWN) {
+					if (rcur[1] == 16) {
+						rcur[1]+=64;
+					}
+					else {
+						rcur[1]+=24;
+					}
+					if (rcur[1] > 128) {
+						rcur[1] = 128;
+					}
+					move_sprite(0, rcur[0], rcur[1]);
+					curDel = 1;
+				}
+				if(joypad() & J_B) {
+					HIDE_SPRITES;
+					rcur[0] = 0;
+					rcur[1] = 0;
+					move_sprite(0, rcur[0], rcur[1]);
+					selectmode = 0;
+					curDel = 1;
+				}
+				if (joypad() & J_A && map1[temp2] != 0x14) {
+					curDel = 1;
+					temp = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
+					switch (cgbmap1[temp]){
+						case 5 : //yellow
+							rcur[0] = 16;
+							rcur[1] = 24;
+							whitemode = 5;
+							updateBG();
+							break;
+						case 1 : //blue
+							rcur[0] = 88;
+							rcur[1] = 24;
+							whitemode = 1;
+							updateBG();
+							break;
+						case 4 : //green
+							whitemode = 4;
+							for (temp2 = 0; temp2 < 11; temp2++){
+								if (map1[183+temp2] != 0x16 && map1[183+temp2] != 0x17 && map1[183+temp2] != 0x18 && map1[183+temp2] != 0x19 && map1[183+temp2] != 0x1A && map1[183+temp2] != 0x1B){
+									temp3 = (cur[0]+17)+(20*(cur[1]+1));
+									switch(map1[temp3]) {
+										case 0x40 :
+											temp10 = 0x16;
+											break;
+										case 0x41 :
+											temp10 = 0x17;
+											break;
+										case 0x42 :
+											temp10 = 0x18;
+											break;
+										case 0x43 :
+											temp10 = 0x19;
+											break;
+										case 0x44 :
+											temp10 = 0x1A;
+											break;
+										case 0x45 :
+											temp10 = 0x1B;
+											break;
+									}
+									map1[temp2+183] = temp10;
+									cgbmap1[temp2+183] = 0x00;
+									whitemode = 0;
+									updateBG();
+									pickDie();
+									rcur[0] = 0;
+									rcur[1] = 1;
+									HIDE_SPRITES;
+									selectmode = 0;
+									return;
+								}
+							}
+							break;
+						case 2 : //orange
+							for (temp2 = 0; temp2 < 11; temp2++){
+								if (map1[243+temp2] != 0x16 && map1[243+temp2] != 0x17 && map1[243+temp2] != 0x18 && map1[243+temp2] != 0x19 && map1[243+temp2] != 0x1A && map1[243+temp2] != 0x1B){
+									temp3 = (cur[0]+17)+(20*(cur[1]+1));
+									switch(map1[temp3]) {
+										case 0x40 :
+											temp10 = 0x16;
+											break;
+										case 0x41 :
+											temp10 = 0x17;
+											break;
+										case 0x42 :
+											temp10 = 0x18;
+											break;
+										case 0x43 :
+											temp10 = 0x19;
+											break;
+										case 0x44 :
+											temp10 = 0x1A;
+											break;
+										case 0x45 :
+											temp10 = 0x1B;
+											break;
+									}
+									map1[temp2+243] = temp10;
+									cgbmap1[temp2+243] = 0x00;
+									whitemode = 0;
+									updateBG();
+									pickDie();
+									rcur[0] = 0;
+									rcur[1] = 1;
+									HIDE_SPRITES;
+									selectmode = 0;
+									return;
+								}
+							}
+							whitemode = 2;
+							break;
+						default : //purple
+							for (temp2 = 0; temp2 < 11; temp2++){
+								if (map1[303+temp2] != 0x16 && map1[303+temp2] != 0x17 && map1[303+temp2] != 0x18 && map1[303+temp2] != 0x19 && map1[303+temp2] != 0x1A && map1[303+temp2] != 0x1B){
+									temp3 = (cur[0]+17)+(20*(cur[1]+1));
+									switch(map1[temp3]) {
+										case 0x40 :
+											temp10 = 0x16;
+											break;
+										case 0x41 :
+											temp10 = 0x17;
+											break;
+										case 0x42 :
+											temp10 = 0x18;
+											break;
+										case 0x43 :
+											temp10 = 0x19;
+											break;
+										case 0x44 :
+											temp10 = 0x1A;
+											break;
+										case 0x45 :
+											temp10 = 0x1B;
+											break;
+									}
+									map1[temp2+303] = temp10;
+									cgbmap1[temp2+303] = 0x00;
+									whitemode = 0;
+									updateBG();
+									pickDie();
+									rcur[0] = 0;
+									rcur[1] = 1;
+									selectmode = 0;
+									HIDE_SPRITES;
+									return;
+								}
+							}
+							whitemode = 1;
+							break;
+					}
+				}
+			}
+		}
+		
 	}
 }
 
