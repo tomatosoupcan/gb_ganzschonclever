@@ -6,8 +6,10 @@
 #include "map3.c"
 #include "map4.c"
 #include "rand.h"
+#include "sprite1.c"
 
 UINT8 cur[2];
+UINT8 rcur[2];
 UINT8 temp;
 UINT8 temp2;
 UINT8 temp3;
@@ -19,6 +21,7 @@ UINT8 temp8;
 UINT8 temp9;
 UINT8 curDel;
 UINT8 infoTrack[3];
+UINT8 selectmode = 0;
 unsigned char tempArray[];
 unsigned int seed;
 
@@ -146,6 +149,15 @@ void init() {
 	set_bkg_data(0, 127, TileLabel);		// Load tiles into background memory
 	
 	set_bkg_tiles(0,0,20,18,map2); //load starting screen
+
+	set_sprite_data(0,1,sprites);
+	set_sprite_tile(0,0);
+	move_sprite(0, 16, 24);
+	set_sprite_palette(0,8, bkg_palette);
+	set_sprite_prop(0,1);
+	
+	rcur[0] = 16;
+	rcur[1] = 24;
 	cur[0] = 0; //set the cursor positions
 	cur[1] = 0;
 	infoTrack[0] = 1; //set the current round to 1
@@ -157,7 +169,6 @@ void init() {
 void updateSwitches() { //show just the background for now, will need a sprite and window eventually
 	
 	HIDE_WIN;
-	HIDE_SPRITES;
 	SHOW_BKG;
 	
 }
@@ -191,71 +202,130 @@ void checkInput() {
 	if (!joypad()) {
 		curDel = 0;
 	}
-	if (curDel == 0) {
-		if (joypad() & J_DOWN) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
-			clearCursor();
-			if (cur[1] < 5) {
-				cur[1]++;
+	if (selectmode == 0){
+		if (curDel == 0) {
+			if (joypad() & J_DOWN) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
+				clearCursor();
+				if (cur[1] < 5) {
+					cur[1]++;
+				}
+				else {
+					cur[1] = 0;
+				}
+				if (cur[1] == 3 && cur[0] == 2) {
+					cur[1]++;
+				}
+				moveCursor();
 			}
-			else {
-				cur[1] = 0;
+			if (joypad() & J_UP) {
+				clearCursor();
+				if (cur[1] > 0) {
+					cur[1]--;
+				}
+				else {
+					cur[1] = 5;
+				}
+				if (cur[1] == 3 && cur[0] == 2) {
+					cur[1]--;
+				}
+				moveCursor();
 			}
-			if (cur[1] == 3 && cur[0] == 2) {
-				cur[1]++;
+			if (joypad() & J_RIGHT) {
+				if (cur[1] == 3) {
+					return;
+				}
+				clearCursor();
+				if (cur[0] == 2) {
+					cur[0] = 0;
+				}
+				else {
+					cur[0] = 2;
+				}
+				moveCursor();
 			}
-			moveCursor();
+			if (joypad() & J_LEFT) {
+				if (cur[1] == 3) {
+					return;
+				}
+				clearCursor();
+				if (cur[0] == 2) {
+					cur[0] = 0;
+				}
+				else {
+					cur[0] = 2;
+				}
+				moveCursor();
+			}
+			temp = (cur[0]+17)+(20*(cur[1]+1));
+			if (joypad() & J_A) {
+				if (cur[0] == 2 && cur[1] == 5) {
+					rollDice();
+				}
+				else if (cur[0] == 0 && map1[temp] != 0x48){
+					SHOW_SPRITES;
+					/*pickDie();*/
+					selectmode = 1;
+				}
+				curDel = 1;
+			}
+			if (joypad() & J_START) {
+				newRound();
+				curDel = 1;
+			}
 		}
-		if (joypad() & J_UP) {
-			clearCursor();
-			if (cur[1] > 0) {
-				cur[1]--;
+	}
+	else if (selectmode == 1){
+		if (curDel == 0) {
+			//Begin Yellow Handling
+			if(joypad() & J_RIGHT) {
+				rcur[0]+=8;
+				if (rcur[0] > 40) {
+					rcur[0] = 40;
+				}
+				move_sprite(0, rcur[0], rcur[1]);
+				curDel = 1;
 			}
-			else {
-				cur[1] = 5;
+			if(joypad() & J_LEFT) {
+				rcur[0]-=8;
+				if (rcur[0] < 16) {
+					rcur[0] = 16;
+				}
+				move_sprite(0, rcur[0], rcur[1]);
+				curDel = 1;
 			}
-			if (cur[1] == 3 && cur[0] == 2) {
-				cur[1]--;
+			if(joypad() & J_UP) {
+				rcur[1]-=8;
+				if (rcur[1] < 24) {
+					rcur[1] = 24;
+				}
+				move_sprite(0, rcur[0], rcur[1]);
+				curDel = 1;
 			}
-			moveCursor();
-		}
-		if (joypad() & J_RIGHT) {
-			if (cur[1] == 3) {
-				return;
+			if(joypad() & J_DOWN) {
+				rcur[1]+=8;
+				if (rcur[1] > 48) {
+					rcur[1] = 48;
+				}
+				move_sprite(0, rcur[0], rcur[1]);
+				curDel = 1;
 			}
-			clearCursor();
-			if (cur[0] == 2) {
-				cur[0] = 0;
+			if(joypad() & J_B) {
+				HIDE_SPRITES;
+				rcur[0] = 16;
+				rcur[1] = 24;
+				move_sprite(0, rcur[0], rcur[1]);
+				selectmode = 0;
+				curDel = 1;
 			}
-			else {
-				cur[0] = 2;
-			}
-			moveCursor();
-		}
-		if (joypad() & J_LEFT) {
-			if (cur[1] == 3) {
-				return;
-			}
-			clearCursor();
-			if (cur[0] == 2) {
-				cur[0] = 0;
-			}
-			else {
-				cur[0] = 2;
-			}
-			moveCursor();
-		}
-		if (joypad() & J_A) {
-			if (cur[0] == 2 && cur[1] == 5) {
-				rollDice();
-			}
-			else if (cur[0] == 0){
+			if (joypad() & J_A) {
+				HIDE_SPRITES;
 				pickDie();
+				selectmode = 0;
+				temp = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
+				map1[temp] = 0x14;
+				updateBG();
 			}
-			curDel = 1;
-		}
-		if (joypad() & J_START) {
-			newRound();
-			curDel = 1;
+			//end yellow handling
 		}
 	}
 }
@@ -280,19 +350,19 @@ void pickDie() {
 	temp3 = 0;
 	temp5 = 0;
 	for (temp2 = 0; temp2 < 3; temp2++){
-		if (usedDiceValues[temp2] == 0xFF) {
+		if (usedDiceValues[temp2] == 0xFF && map1[temp] != 0x48) {
 			temp4 = 39+(20*temp2);
 			map1[temp4] = map1[temp];
 			cgbmap1[temp4] = cgbmap1[temp];
 			usedDiceValues[temp2] = diceValues[cur[1]];
 			map1[temp] = 0x48;
-			cgbmap1[temp] = 0x00;
+			/*cgbmap1[temp] = 0x00;*/
 			
 			for (temp5 = 0; temp5 < 6; temp5++)
 			{
 				if (diceValues[temp5] < diceValues[cur[1]]){
 					map1[diceTiles[temp5]] = 0x48;
-					cgbmap1[diceTiles[temp5]] = 0x00;
+					/*cgbmap1[diceTiles[temp5]] = 0x00;*/
 				}
 			}
 			
