@@ -27,7 +27,7 @@ unsigned char temp10;
 unsigned char temp11;
 UINT8 prevPurp;
 UINT8 curDel;
-UINT8 infoTrack[3];
+UINT8 infoTrack[6];
 UINT8 selectmode = 0;
 unsigned char tempArray[];
 unsigned int seed;
@@ -72,6 +72,7 @@ unsigned char diceTiles[] =
 	0x25,0x39,0x4D,0x61,0x75,0x89
 };
 
+
 unsigned char diceAvaPalettes[] =
 {
 	0x01,0x02,0x03,0x04,0x05,0x00
@@ -89,34 +90,19 @@ const UWORD bkg_palette[] =
 	RGB(29,30,23), RGB(13,25,0), RGB(25,17,0),RGB(2,4,31)
 };
 
-UINT8 y_array[] =
-{
-	3,6,5,0,
-	2,1,0,5,
-	1,0,2,4,
-	0,3,4,6
-};
-
-UINT8 b_array[] =
-{
-	0,2,3,4,
-	5,6,7,8,
-	9,10,11,12
-};
-
 UINT8 g_array[] =
 {
 	1,2,3,4,5,1,2,3,4,5,6
 };
 
-UINT8 o_array[] =
+const UINT8 g_prog[] = 
 {
-	0,0,0,0,0,0,0,0,0,0,0
+	0,1,3,6,10,15,21,28,36,45,55,66
 };
 
-UINT8 p_array[] =
+const UINT8 b_prog[] = 
 {
-	0,0,0,0,0,0,0,0,0,0,0
+	0,1,2,4,7,11,16,22,29,37,46,56
 };
 
 
@@ -133,8 +119,11 @@ void updateBG();
 int die2Num(unsigned char die);
 int tile2Num(unsigned char tile);
 void reroll();
+int bignum2Tile(unsigned char num);
+void midrollDice();
 
 void main() {
+	map1[340] = 21;
 	init();
 
 	while(!joypad()){seed++; if(seed>=255)seed=1;} //generate the seed based on when you hit a button
@@ -173,6 +162,9 @@ void init() {
 	infoTrack[0] = 1; //set the current round to 1
 	infoTrack[1] = 0; //set the number of +1 to 0
 	infoTrack[2] = 1; //set the number of rerolls to 0
+	infoTrack[3] = 0; //set the score to 0
+	infoTrack[4] = 0; //set the green pos to 0
+	infoTrack[5] = 0; //set the blue pos to 0
 	/*rollDice();*/
 }
 
@@ -268,7 +260,8 @@ void checkInput() {
 			}
 			temp = (cur[0]+17)+(20*(cur[1]+1));
 			if (joypad() & J_A) {
-				if (cur[0] == 2 && cur[1] == 5) {
+				if (cur[0] == 2 && cur[1] == 5 && infoTrack[2] > 0 && infoTrack[0] % 2 != 0) {
+					infoTrack[2]--;
 					reroll();
 				}
 				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72) {
@@ -430,6 +423,9 @@ void checkInput() {
 					rcur[0] = 0;
 					rcur[1] = 0;
 					move_sprite(0, rcur[0], rcur[1]);
+					infoTrack[5]++;
+					map1[133] = bignum2Tile(b_prog[infoTrack[5]]);
+					map1[134] = bignum2Tile(b_prog[infoTrack[5]+1]);
 					whitemode = 0;
 					reroll();
 					updateBG();
@@ -442,12 +438,14 @@ void checkInput() {
 				rcur[1] = 24;
 			}
 			for (temp2 = 0; temp2 < 11; temp2++){
-				if (g_array[temp2] > die2Num(temp)) {
+				if ((int)g_array[temp2] > (int)die2Num(temp)) {
 					if (whitemode == 4) {
 						curDel = 0;
 						whitemode = 0;
 						return;
 					}
+					map1[0] = g_array[temp2];
+					map1[1] = die2Num(temp);
 					curDel = 0;
 					selectmode = 0;
 					return;
@@ -480,6 +478,9 @@ void checkInput() {
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
+					infoTrack[4]++;
+					map1[181] = bignum2Tile(g_prog[infoTrack[4]]);
+					map1[182] = bignum2Tile(g_prog[infoTrack[4]+1]);
 					updateBG();
 					pickDie();
 					reroll();
@@ -862,17 +863,31 @@ void newRound(){
 		cgbmap1[temp4] = 0x00;
 		usedDiceValues[temp2] = 0xFF;
 	}
-	temp3 = infoTrack[0]-1;
-	map1[temp3+340] = 0x15;
+	temp3 = (infoTrack[0])/2;
+	map1[(int)temp3+340] = 0x15;
+	switch (infoTrack[0]) {
+		case 2:
+			infoTrack[1]++;
+			break;
+		case 4:
+			infoTrack[2]++;
+			break;
+	}
 
-
+	if (infoTrack[0] % 2 == 0) {
+		rollDice();
+	}
+	else {
+		midrollDice();
+	}
 
 	infoTrack[0]++;
-	rollDice();
 	updateBG();
 }
 
 void updateBG(){
+	map1[350] = bignum2Tile(infoTrack[1]);
+	map1[353] = bignum2Tile(infoTrack[2]);
 	VBK_REG = 1;
 	set_bkg_tiles(0,0,20,18,cgbmap1);
 	VBK_REG = 0;
@@ -964,4 +979,168 @@ int bw2Num(unsigned char die){
 			return 6;
 			break;
 	}
+}
+
+int bignum2Tile(unsigned char num){
+	switch (num) {
+		case 1:
+			return 37;
+			break;
+		case 2:
+			return 38;
+			break;
+		case 4:
+			return 39;
+			break;
+		case 7:
+			return 40;
+			break;
+		case 11:
+			return 41;
+			break;
+		case 16:
+			return 42;
+			break;
+		case 22:
+			return 43;
+			break;
+		case 29:
+			return 44;
+			break;
+		case 37:
+			return 45;
+			break;
+		case 46:
+			return 46;
+			break;
+		case 56:
+			return 47;
+			break;
+		case 0:
+			return 48;
+			break;	
+		case 10:
+			return 12;
+			break;
+		case 14:
+			return 13;
+			break;
+		case 20:
+			return 15;
+			break;
+		case 3:
+			return 78;
+			break;	
+		case 5:
+			return 79;
+			break;	
+		case 6:
+			return 80;
+			break;	
+		case 15:
+			return 83;
+			break;	
+		case 21:
+			return 84;
+			break;	
+		case 28:
+			return 85;
+			break;
+		case 36:
+			return 86;
+			break;	
+		case 45:
+			return 87;
+			break;	
+		case 55:
+			return 88;
+			break;	
+		case 66:
+			return 89;
+			break;			
+		case 8:
+			return 114;
+			break;	
+		case 9:
+			return 115;
+			break;
+		case 12:
+			return 116;
+			break;			
+	}
+}
+
+void midrollDice() {
+	//Roll the colors and dice
+	shuffle(diceAvaPalettes, 6);
+	temp11 = 0x02;
+	for (temp = 0; temp < 6; temp++)
+		{
+			int r1 = (rand() % 6);
+			if (r1 < 0) {r1 = r1*-1;}
+			if (temp < 3) {
+				temp2 = diceTiles[temp];
+				cgbmap1[temp2] = diceAvaPalettes[temp];
+				map1[temp2] = diceArray[r1];
+				diceValues[temp] = r1;
+				if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01) {
+					temp11 = temp11 + diceValues[temp];
+				}
+			}
+			else {
+				temp2 = usedDiceTiles[temp-3]-1;
+				cgbmap1[temp2] = diceAvaPalettes[temp];
+				map1[temp2] = diceArray[r1];
+				usedDiceValues[temp-3] = r1;
+				diceValues[temp] = 0;
+				temp2 = diceTiles[temp];
+				cgbmap1[temp2] = 0x00;
+				map1[temp2] = 0x48;
+				if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01) {
+					temp11 = temp11 + usedDiceValues[temp-3];
+				}
+			}
+
+		}
+	bwStore = temp11;
+	switch (temp11){
+		case 2 :
+			temp11 = 38;
+			break;
+		case 3 :
+			temp11 = 78;
+			break;
+		case 4 :
+			temp11 = 39;
+			break;
+		case 5 :
+			temp11 = 79;
+			break;
+		case 6 :
+			temp11 = 80;
+			break;
+		case 7 :
+			temp11 = 40;
+			break;
+		case 8 :
+			temp11 = 114;
+			break;
+		case 9 :
+			temp11 = 115;
+			break;
+		case 10 :
+			temp11 = 82;
+			break;
+		case 11 :
+			temp11 = 41;
+			break;
+		case 12 :
+			temp11 = 116;
+			break;
+		default :
+			break;
+	}
+	map1[29] = temp11;
+	cgbmap1[29] = 0x01;
+	updateBG();
 }
