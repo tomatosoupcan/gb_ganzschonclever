@@ -3,11 +3,11 @@
 #include "tiles.c"
 #include "map.c"
 #include "map2.c"
-#include "map3.c"
-#include "map4.c"
+//#include "map3.c"
+//#include "map4.c"
 #include "rand.h"
 #include "sprite1.c"
-#include "window.c"
+//#include "window.c"
 
 UINT8 cur[2];
 UINT8 rcur[2];
@@ -16,6 +16,8 @@ UINT8 temp2;
 UINT8 temp3;
 UINT8 temp4;
 UINT8 temp5;
+UINT8 temp6;
+UINT8 temp7;
 UINT8 whitemode;
 UINT8 bwStore;
 UINT8 opRound = 0;
@@ -109,10 +111,10 @@ void main_int();
 void pickDie();
 void newRound();
 void updateBG();
-int die2Num(unsigned char die);
-int tile2Num(unsigned char tile);
+UINT8 die2Num(unsigned char die);
+UINT8 tile2Num(unsigned char tile);
 void reroll();
-int bignum2Tile(unsigned char num);
+UINT8 bignum2Tile(unsigned char num);
 void midrollDice();
 
 void main() {
@@ -135,12 +137,12 @@ void init() {
 	curDel = 1; //set the cursor lock
 	set_bkg_palette(0, 8, bkg_palette); //load the pallets
 	VBK_REG = 1; //switch to color map
-	set_bkg_tiles(0,0,20,18,cgbmap2); //load color map
+	set_bkg_tiles(0,0,20,18,cgbmap1); //load color map
 	VBK_REG = 0; //switch to regular map
 	DISPLAY_ON;						// Turn on the display
 	set_bkg_data(0, 127, TileLabel);		// Load tiles into background memory
 	
-	set_bkg_tiles(0,0,20,18,map2); //load starting screen
+	set_bkg_tiles(0,0,20,18,map1); //load starting screen
 
 	set_sprite_data(0,1,sprites);
 	set_sprite_tile(0,0);
@@ -269,7 +271,7 @@ void checkInput() {
 				{
 					return;
 				}
-				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && map1[temp] != 0x48) {
+				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && cur[0] == 2 && map1[temp] != 0x48) {
 					selectmode = 1;
 				}
 				else if (cur[0] == 0 && map1[temp] != 0x48){
@@ -898,6 +900,7 @@ void newRound(){
 
 	infoTrack[0]++;
 	updateBG();
+	if (opUsed == 1){opUsed = 0;}
 }
 
 void updateBG(){
@@ -909,7 +912,7 @@ void updateBG(){
 	set_bkg_tiles(0,0,20,18,map1);
 }
 
-int tile2Num(unsigned char tile){
+UINT8 tile2Num(unsigned char tile){
 	switch (map1[tile]){
 		case 22:
 			return 1;
@@ -950,7 +953,7 @@ int tile2Num(unsigned char tile){
 	}
 }
 
-int die2Num(unsigned char die){
+UINT8 die2Num(unsigned char die){
 	switch (map1[die]) {
 		case 64:
 			return 1;
@@ -973,7 +976,7 @@ int die2Num(unsigned char die){
 	}
 }
 
-int bignum2Tile(unsigned char num){
+UINT8 bignum2Tile(unsigned char num){
 	switch (num) {
 		case 1:
 			return 37;
