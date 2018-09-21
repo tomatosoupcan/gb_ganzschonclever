@@ -22,6 +22,7 @@ UINT8 temp8;
 UINT8 temp9;
 UINT8 whitemode;
 UINT8 bwStore;
+UINT8 opRound = 0;
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
@@ -264,10 +265,12 @@ void checkInput() {
 					infoTrack[2]--;
 					reroll();
 				}
-				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72) {
+				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
 					return;
 				}
-				
+				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && map1[temp] != 0x48) {
+					selectmode = 1;
+				}
 				else if (cur[0] == 0 && map1[temp] != 0x48){
 					/*pickDie();*/
 					selectmode = 1;
@@ -444,8 +447,8 @@ void checkInput() {
 						whitemode = 0;
 						return;
 					}
-					map1[0] = g_array[temp2];
-					map1[1] = die2Num(temp);
+					/*map1[0] = g_array[temp2];
+					map1[1] = die2Num(temp);*/
 					curDel = 0;
 					selectmode = 0;
 					return;
@@ -679,72 +682,78 @@ void checkInput() {
 					}
 				}
 			}
-		}
-		
+		}	
 	}
 }
 
 void reroll() {
-	temp11 = 0x02;
-	for (temp = 0; temp < 6; temp++)
+	if (opRound == 1) 
 	{
-		tempint = (rand() % 6);
-		if (tempint < 0) {tempint = tempint*-1;}
-		temp2 = diceTiles[temp];
-		if (map1[temp2] != 72) {
-			cgbmap1[temp2] = diceAvaPalettes[temp];
-			map1[temp2] = diceArray[tempint];
-			diceValues[temp] = tempint;
-		}
+		newRound();
+		opRound = 0;
 	}
-	for (temp = 0; temp < 6; temp++)
+	else {
+		reroll();
+		temp11 = 0x02;
+		for (temp = 0; temp < 6; temp++)
 		{
-			if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01)
-			{
-				temp11 = temp11 + diceValues[temp];
+			tempint = (rand() % 6);
+			if (tempint < 0) {tempint = tempint*-1;}
+			temp2 = diceTiles[temp];
+			if (map1[temp2] != 72) {
+				cgbmap1[temp2] = diceAvaPalettes[temp];
+				map1[temp2] = diceArray[tempint];
+				diceValues[temp] = tempint;
 			}
 		}
-	bwStore = temp11;
-	switch (temp11){
-		case 2 :
-			temp11 = 38;
-			break;
-		case 3 :
-			temp11 = 78;
-			break;
-		case 4 :
-			temp11 = 39;
-			break;
-		case 5 :
-			temp11 = 79;
-			break;
-		case 6 :
-			temp11 = 80;
-			break;
-		case 7 :
-			temp11 = 40;
-			break;
-		case 8 :
-			temp11 = 114;
-			break;
-		case 9 :
-			temp11 = 115;
-			break;
-		case 10 :
-			temp11 = 82;
-			break;
-		case 11 :
-			temp11 = 41;
-			break;
-		case 12 :
-			temp11 = 116;
-			break;
-		default :
-			break;
+		for (temp = 0; temp < 6; temp++)
+			{
+				if (diceAvaPalettes[temp] == 0x00 || diceAvaPalettes[temp] == 0x01)
+				{
+					temp11 = temp11 + diceValues[temp];
+				}
+			}
+		bwStore = temp11;
+		switch (temp11){
+			case 2 :
+				temp11 = 38;
+				break;
+			case 3 :
+				temp11 = 78;
+				break;
+			case 4 :
+				temp11 = 39;
+				break;
+			case 5 :
+				temp11 = 79;
+				break;
+			case 6 :
+				temp11 = 80;
+				break;
+			case 7 :
+				temp11 = 40;
+				break;
+			case 8 :
+				temp11 = 114;
+				break;
+			case 9 :
+				temp11 = 115;
+				break;
+			case 10 :
+				temp11 = 82;
+				break;
+			case 11 :
+				temp11 = 41;
+				break;
+			case 12 :
+				temp11 = 116;
+				break;
+			default :
+				break;
+		}
+		map1[29] = temp11;
+		cgbmap1[29] = 0x01;
 	}
-	map1[29] = temp11;
-	cgbmap1[29] = 0x01;
-	
 	updateBG();
 }
 
@@ -1142,5 +1151,7 @@ void midrollDice() {
 	}
 	map1[29] = temp11;
 	cgbmap1[29] = 0x01;
+	selectmode = 0;
+	opRound = 1;
 	updateBG();
 }
