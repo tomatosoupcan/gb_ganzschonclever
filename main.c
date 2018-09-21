@@ -257,7 +257,7 @@ void checkInput() {
 					infoTrack[2]--;
 					reroll();
 				}
-				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[1] > 0 && infoTrack[0] % 2 != 0 && plusOne == 0) {
+				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[1] > 0  && plusOne == 0) {
 					infoTrack[1]--;
 					plusOne = 1;
 					updateBG();
@@ -693,6 +693,9 @@ void reroll() {
 		//newRound();
 		opUsed = 0;
 	}
+	else if (infoTrack[0] % 2 != 1) {
+		return;
+	}
 	else {
 		temp11 = 0x02;
 		for (temp = 0; temp < 6; temp++)
@@ -821,6 +824,12 @@ void rollDice() {
 }
 
 void pickDie() {
+	rcur[0] = 0;
+	rcur[1] = 0;
+	if (infoTrack[0] % 2 != 1 && plusOne == 0) {
+		return;
+	}
+	plusOne = 0;
 	temp = (cur[0]+17)+(20*(cur[1]+1));
 	temp3 = 0;
 	temp5 = 0;
