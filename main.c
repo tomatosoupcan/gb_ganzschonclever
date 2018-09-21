@@ -16,10 +16,6 @@ UINT8 temp2;
 UINT8 temp3;
 UINT8 temp4;
 UINT8 temp5;
-UINT8 temp6;
-UINT8 temp7;
-UINT8 temp8;
-UINT8 temp9;
 UINT8 whitemode;
 UINT8 bwStore;
 UINT8 opRound = 0;
@@ -30,10 +26,9 @@ UINT8 prevPurp;
 UINT8 curDel;
 UINT8 infoTrack[6];
 UINT8 selectmode = 0;
-unsigned char tempArray[];
 unsigned int seed;
 
-unsigned char diceArray[] = 
+const unsigned char diceArray[] = 
 {
 	0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x48
 };
@@ -43,12 +38,7 @@ unsigned char diceValues[] =
 	0x00,0x00,0x00,0x00,0x00,0x00
 };
 
-unsigned char usedDiceArray[] = 
-{
-	0x48,0x48,0x48
-};
-
-unsigned char usedDiceTiles[] =
+const unsigned char usedDiceTiles[] =
 {
 	0x28,0x3C,0x50
 };
@@ -68,7 +58,7 @@ unsigned char dicePalettes[] =
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 
-unsigned char diceTiles[] =
+const unsigned char diceTiles[] =
 {
 	0x25,0x39,0x4D,0x61,0x75,0x89
 };
@@ -264,6 +254,9 @@ void checkInput() {
 				if (cur[0] == 2 && cur[1] == 5 && infoTrack[2] > 0 && infoTrack[0] % 2 != 0) {
 					infoTrack[2]--;
 					reroll();
+				}
+				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[2] > 0 && infoTrack[0] % 2 != 0) {
+					//add code to handle +1
 				}
 				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
 					return;
@@ -945,29 +938,6 @@ int tile2Num(unsigned char tile){
 }
 
 int die2Num(unsigned char die){
-	switch (map1[die]) {
-		case 64:
-			return 1;
-			break;
-		case 65:
-			return 2;
-			break;
-		case 66:
-			return 3;
-			break;
-		case 67:
-			return 4;
-			break;
-		case 68:
-			return 5;
-			break;
-		case 69:
-			return 6;
-			break;
-	}
-}
-
-int bw2Num(unsigned char die){
 	switch (map1[die]) {
 		case 64:
 			return 1;
