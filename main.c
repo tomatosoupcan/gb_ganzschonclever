@@ -19,6 +19,8 @@ UINT8 temp5;
 UINT8 whitemode;
 UINT8 bwStore;
 UINT8 opRound = 0;
+UINT8 plusOne = 0;
+UINT8 opUsed = 0;
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
@@ -151,7 +153,7 @@ void init() {
 	cur[0] = 0; //set the cursor positions
 	cur[1] = 0;
 	infoTrack[0] = 1; //set the current round to 1
-	infoTrack[1] = 0; //set the number of +1 to 0
+	infoTrack[1] = 5; //set the number of +1 to 0
 	infoTrack[2] = 1; //set the number of rerolls to 0
 	infoTrack[3] = 0; //set the score to 0
 	infoTrack[4] = 0; //set the green pos to 0
@@ -255,22 +257,28 @@ void checkInput() {
 					infoTrack[2]--;
 					reroll();
 				}
-				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[2] > 0 && infoTrack[0] % 2 != 0) {
-					//add code to handle +1
+				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[1] > 0 && infoTrack[0] % 2 != 0 && plusOne == 0) {
+					infoTrack[1]--;
+					plusOne = 1;
+					updateBG();
 				}
 				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
+					return;
+				}
+				else if (opRound = 1 && opUsed == 0 && plusOne == 0)
+				{
 					return;
 				}
 				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && map1[temp] != 0x48) {
 					selectmode = 1;
 				}
 				else if (cur[0] == 0 && map1[temp] != 0x48){
-					/*pickDie();*/
 					selectmode = 1;
 				}
 				curDel = 1;
 			}
 			if (joypad() & J_START) {
+				opRound = 0;
 				newRound();
 				curDel = 1;
 			}
@@ -680,13 +688,12 @@ void checkInput() {
 }
 
 void reroll() {
-	if (opRound == 1) 
+	if (opUsed == 1) 
 	{
-		newRound();
-		opRound = 0;
+		//newRound();
+		opUsed = 0;
 	}
 	else {
-		reroll();
 		temp11 = 0x02;
 		for (temp = 0; temp < 6; temp++)
 		{
@@ -837,9 +844,6 @@ void pickDie() {
 			
 			updateBG();
 			return;
-		}
-		else {
-			temp5++;
 		}
 	}
 }
@@ -1123,5 +1127,6 @@ void midrollDice() {
 	cgbmap1[29] = 0x01;
 	selectmode = 0;
 	opRound = 1;
+	opUsed = 1;
 	updateBG();
 }
