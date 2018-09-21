@@ -155,7 +155,7 @@ void init() {
 	cur[0] = 0; //set the cursor positions
 	cur[1] = 0;
 	infoTrack[0] = 1; //set the current round to 1
-	infoTrack[1] = 5; //set the number of +1 to 0
+	infoTrack[1] = 0; //set the number of +1 to 0
 	infoTrack[2] = 1; //set the number of rerolls to 0
 	infoTrack[3] = 0; //set the score to 0
 	infoTrack[4] = 0; //set the green pos to 0

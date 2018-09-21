@@ -1,9 +1,9 @@
                               1 ;--------------------------------------------------------
                               2 ; File Created by SDCC : FreeWare ANSI-C Compiler
-                              3 ; Version 2.2.1 Fri Sep 21 18:16:42 2018
+                              3 ; Version 2.2.1 Fri Sep 21 18:19:20 2018
                               4 
                               5 ;--------------------------------------------------------
-                              6 	.module lcc657440
+                              6 	.module lcc664480
                               7 	
                               8 ;--------------------------------------------------------
                               9 ; Public variables in this module
@@ -18351,7 +18351,7 @@
                           18351 ; genPlusIncr
    018D 11 77 0B          18352 	ld	de,#_infoTrack + 0 + 1
                           18353 ; genAssign (pointer)
-   0190 3E 05             18354 	ld	a,#0x05
+   0190 3E 00             18354 	ld	a,#0x00
    0192 12                18355 	ld	(de),a
                           18356 ;	main.c 159
                           18357 ; genPlus
