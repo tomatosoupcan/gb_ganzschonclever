@@ -265,7 +265,7 @@ void checkInput() {
 				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
 					return;
 				}
-				else if (opRound = 1 && opUsed == 0 && plusOne == 0)
+				else if (infoTrack[0] % 2 == 0 && opUsed == 0 && plusOne == 0)
 				{
 					return;
 				}
@@ -693,7 +693,7 @@ void reroll() {
 		//newRound();
 		opUsed = 0;
 	}
-	else if (infoTrack[0] % 2 != 1) {
+	else if (infoTrack[0] % 2 == 0) {
 		return;
 	}
 	else {
