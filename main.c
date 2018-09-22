@@ -10,6 +10,7 @@
 //#include "window.c"
 
 UINT8 cur[2];
+UINT8 curtemp[2];
 UINT8 rcur[2];
 UINT8 temp;
 UINT8 temp2;
@@ -23,6 +24,7 @@ UINT8 bwStore;
 UINT8 opRound = 0;
 UINT8 plusOne = 0;
 UINT8 opUsed = 0;
+UINT8 bonusRun = 0;
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
@@ -92,12 +94,12 @@ UINT8 g_array[] =
 
 const UINT8 g_prog[] = 
 {
-	0,1,3,6,10,15,21,28,36,45,55,66
+	0,1,3,6,10,15,21,28,36,45,55,66,0
 };
 
 const UINT8 b_prog[] = 
 {
-	0,1,2,4,7,11,16,22,29,37,46,56
+	0,1,2,4,7,11,16,22,29,37,46,56,0
 };
 
 
@@ -116,6 +118,7 @@ UINT8 tile2Num(unsigned char tile);
 void reroll();
 UINT8 bignum2Tile(unsigned char num);
 void midrollDice();
+void bonus(int type);
 
 void main() {
 	map1[340] = 21;
@@ -200,6 +203,11 @@ void checkInput() {
 		curDel = 0;
 	}
 	if (selectmode == 0){
+		if (cur[1] == 3 && cur[0] == 2) {
+			cur[0] = curtemp[0];
+			cur[1] = curtemp[1];
+			moveCursor();
+		}	
 		if (curDel == 0) {
 			if (joypad() & J_DOWN) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
 				clearCursor();
@@ -284,11 +292,14 @@ void checkInput() {
 				newRound();
 				curDel = 1;
 			}
+			if (joypad() & J_SELECT) {
+				//used for testing individual functions
+			}
 		}
 	}
 	else if (selectmode == 1){
 		temp = (cur[0]+17)+(20*(cur[1]+1));
-		if (cgbmap1[temp] == 5 || whitemode == 5) { //yellow
+		if (cgbmap1[temp] == 5 || whitemode == 5 || bonusRun == 1) { //yellow
 			if (curDel == 0) {
 				//Begin Yellow Handling
 				if (rcur[0] == 0) {
@@ -337,11 +348,12 @@ void checkInput() {
 					selectmode = 0;
 					whitemode = 0;
 					curDel = 1;
+					bonusRun = 0;
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
 				temp3 = (cur[0]+17)+(20*(cur[1]+1));
 				if (joypad() & J_A && map1[temp2] != 0x14) {
-					if (die2Num(temp3) != tile2Num(temp2)){
+					if (die2Num(temp3) != tile2Num(temp2) && bonusRun == 0){
 						curDel = 0;
 						return;
 					}
@@ -355,12 +367,13 @@ void checkInput() {
 					map1[temp] = 0x14;
 					whitemode = 0;
 					reroll();
+					bonusRun = 0;
 					updateBG();
 				}
 				//end yellow handling
 			}
 		}
-		else if (cgbmap1[temp] == 1 || whitemode == 1) { //blue
+		else if (cgbmap1[temp] == 1 || whitemode == 1 || bonusRun == 2) { //blue
 			if (curDel == 0) {
 				if (rcur[0] == 0) {
 					rcur[0] = 88;
@@ -413,11 +426,12 @@ void checkInput() {
 					move_sprite(0, rcur[0], rcur[1]);
 					selectmode = 0;
 					whitemode = 0;
+					bonusRun = 0;
 					curDel = 1;
 				}
 				temp2 = (((rcur[0]/8))+(((rcur[1]/8)-2)*20))-1;
 				if (joypad() & J_A && map1[temp2] != 0x14) {
-					if (bwStore != tile2Num(temp2)){
+					if (bwStore != tile2Num(temp2) && bonusRun == 0){
 						curDel = 0;
 						return;
 					}
@@ -434,20 +448,25 @@ void checkInput() {
 					map1[134] = bignum2Tile(b_prog[infoTrack[5]+1]);
 					whitemode = 0;
 					reroll();
+					bonusRun = 0;
 					updateBG();
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 4 || whitemode == 4) { //green
+		else if (cgbmap1[temp] == 4 || whitemode == 4 || bonusRun == 3) { //green
+			if (map1[193] != 56){
+				curDel = 0;
+				selectmode = 0;
+				return;}
 			temp4 = 0;
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
 				rcur[1] = 24;
 			}
 			for (temp2 = 0; temp2 < 11; temp2++){
-				map1[0] = g_array[temp2];
+				//map1[0map1[0] = g_array[temp2];
 				if ((int)g_array[temp2] > (int)die2Num(temp)) {
-					if (map1[187] == 0x37 || temp2 > 4){
+					if ((map1[187] == 0x37 || temp2 > 4) && bonusRun == 0){
 						if (whitemode == 4) {
 							curDel = 0;
 							whitemode = 0;
@@ -480,6 +499,7 @@ void checkInput() {
 							temp10 = 0x1B;
 							break;
 					}
+					if (bonusRun != 0) {temp10 = 0x1B;}
 					map1[temp2+183] = temp10;
 					cgbmap1[temp2+183] = 0x00;
 					whitemode = 0;
@@ -492,12 +512,17 @@ void checkInput() {
 					updateBG();
 					pickDie();
 					reroll();
+					bonusRun = 0;
 					selectmode = 0;
 					return;
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 2 || whitemode == 2) { //orange
+		else if (cgbmap1[temp] == 2 || whitemode == 2 || bonusRun == 4 || bonusRun == 5 || bonusRun == 6) { //orange
+			if (map1[253] != 58){
+				curDel = 0;
+				selectmode = 0;
+				return;}
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
 				rcur[1] = 24;
@@ -525,6 +550,19 @@ void checkInput() {
 							temp10 = 0x1B;
 							break;
 					}
+					switch (bonusRun) {
+						case 4:
+							temp10 = 0x19;
+							break;
+						case 5:
+							temp10 = 0x1A;
+							break;
+						case 6:
+							temp10 = 0x1B;
+							break;
+						default:
+							break;
+					}
 					map1[temp2+243] = temp10;
 					cgbmap1[temp2+243] = 0x00;
 					whitemode = 0;
@@ -534,12 +572,17 @@ void checkInput() {
 					updateBG();
 					pickDie();
 					reroll();
+					bonusRun = 0;
 					selectmode = 0;
 					return;
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 3 || whitemode == 3) { //purple
+		else if (cgbmap1[temp] == 3 || whitemode == 3 || bonusRun == 7) { //purple
+			if (map1[313] != 59){
+				curDel = 0;
+				selectmode = 0;
+				return;}
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
 				rcur[1] = 24;
@@ -549,6 +592,9 @@ void checkInput() {
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
 					if (temp2 == 0 || prevPurp < die2Num(temp3) || prevPurp == 6) {
 						prevPurp = die2Num(temp3);
+					}
+					else if (bonusRun != 0) {
+						prevPurp = 6;
 					}
 					else {
 						if (whitemode == 3) {
@@ -581,6 +627,7 @@ void checkInput() {
 							temp10 = 0x1B;
 							break;
 					}
+					if (bonusRun != 0) {temp10 = 0x1B;}
 					map1[temp2+303] = temp10;
 					cgbmap1[temp2+303] = 0x00;
 					whitemode = 0;
@@ -591,11 +638,12 @@ void checkInput() {
 					pickDie();
 					reroll();
 					selectmode = 0;
+					bonusRun = 0;
 					return;
 				}
 			}
 		}
-		else if (cgbmap1[temp] == 0) { //white
+		else if (cgbmap1[temp] == 0 || bonusRun == 8) { //white
 			if (curDel == 0) {
 				if (rcur[0] == 0) {
 					rcur[0] = 8;
@@ -655,6 +703,7 @@ void checkInput() {
 					move_sprite(0, rcur[0], rcur[1]);
 					selectmode = 0;
 					curDel = 1;
+					bonusRun = 0;
 				}
 				if (joypad() & J_A && map1[temp2] != 0x14) {
 					curDel = 1;
@@ -687,11 +736,13 @@ void checkInput() {
 					}
 				}
 			}
-		}	
+		}
 	}
 }
 
 void reroll() {
+	if (bonusRun != 0){
+		return;}
 	if (opUsed == 1) 
 	{
 		//newRound();
@@ -828,6 +879,8 @@ void rollDice() {
 }
 
 void pickDie() {
+	if (bonusRun != 0){
+		return;}
 	rcur[0] = 0;
 	rcur[1] = 0;
 	if (infoTrack[0] % 2 != 1 && plusOne == 0) {
@@ -1145,4 +1198,40 @@ void midrollDice() {
 	opRound = 1;
 	opUsed = 1;
 	updateBG();
+}
+
+void bonus(int type) {
+	//1 is yellow bonus
+	//2 is blue bonus
+	//3 is green bonus
+	//4 is orange 4
+	//5 is orange 5
+	//6 is orange 6
+	//7 is purple bonus
+	//8 is wildcard bonus
+	//9 is fox
+	//10 is +1
+	//11 is reroll
+	if (type < 9)
+	{curtemp[0] = cur[0];
+	curtemp[1] = cur[1];
+	cur[0] = 2;
+	cur[1] = 3;
+	bonusRun = type;
+	selectmode = 1;
+	}
+	else if (type == 9){
+		//loop through check scores, and then take the lowest and add it to the score
+	}
+	else if (type == 10){
+		curDel = 1;
+		infoTrack[1]++;
+		updateBG();
+	}
+	else if (type == 11){
+		curDel = 1;
+		infoTrack[2]++;
+		updateBG();
+	}
+	//checkInput();
 }
