@@ -1,3 +1,8 @@
+//TODO: +1 during your turn
+//TODO: scoring for each section
+//TODO: fox scoring
+//TODO: limit selection to left side during opp mode unless you can't play anything
+
 #include <gb/gb.h>
 #include <gb/cgb.h>
 #include "tiles.c"
@@ -951,6 +956,23 @@ void newRound(){
 			break;
 		case 6:
 			bonus(8);
+			break;
+		case 10:
+			//show the score here
+			HIDE_BKG;
+			curDel = 1;
+			for (tempint = 0; tempint < 359; tempint++){
+				map1[tempint] = map1s[tempint];
+				cgbmap1[tempint] = cgbmap1s[tempint];
+			}
+			map1[340] = 21;
+			init();
+
+			while(!joypad()){seed++; if(seed>=255)seed=1;} //generate the seed based on when you hit a button
+			initrand(seed);
+			rollDice();
+			updateBG();
+			infoTrack[0] = 0;
 			break;
 	}
 
