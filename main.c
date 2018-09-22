@@ -3,11 +3,11 @@
 #include "tiles.c"
 #include "map.c"
 #include "map2.c"
-//#include "map3.c"
-//#include "map4.c"
+#include "map3.c"
+#include "map4.c"
 #include "rand.h"
 #include "sprite1.c"
-//#include "window.c"
+#include "window.c"
 
 UINT8 cur[2];
 UINT8 curtemp[2];
@@ -141,12 +141,12 @@ void init() {
 	curDel = 1; //set the cursor lock
 	set_bkg_palette(0, 8, bkg_palette); //load the pallets
 	VBK_REG = 1; //switch to color map
-	set_bkg_tiles(0,0,20,18,cgbmap1); //load color map
+	set_bkg_tiles(0,0,20,18,cgbmap2); //load color map
 	VBK_REG = 0; //switch to regular map
 	DISPLAY_ON;						// Turn on the display
 	set_bkg_data(0, 127, TileLabel);		// Load tiles into background memory
 	
-	set_bkg_tiles(0,0,20,18,map1); //load starting screen
+	set_bkg_tiles(0,0,20,18,map2); //load starting screen
 
 	set_sprite_data(0,1,sprites);
 	set_sprite_tile(0,0);
