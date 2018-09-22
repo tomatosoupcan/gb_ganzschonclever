@@ -119,6 +119,7 @@ void reroll();
 UINT8 bignum2Tile(unsigned char num);
 void midrollDice();
 void bonus(int type);
+void checkBonuses();
 
 void main() {
 	map1[340] = 21;
@@ -201,6 +202,7 @@ void checkInput() {
 	//Don't allow the joypad to be used again until you let go of a button
 	if (!joypad()) {
 		curDel = 0;
+		checkBonuses();
 	}
 	if (selectmode == 0){
 		if (cur[1] == 3 && cur[0] == 2) {
@@ -947,6 +949,9 @@ void newRound(){
 		case 4:
 			infoTrack[2]++;
 			break;
+		case 6:
+			bonus(8);
+			break;
 	}
 
 	if (infoTrack[0] % 2 == 0) {
@@ -1201,6 +1206,7 @@ void midrollDice() {
 }
 
 void bonus(int type) {
+	curDel=1;
 	//1 is yellow bonus
 	//2 is blue bonus
 	//3 is green bonus
@@ -1234,4 +1240,163 @@ void bonus(int type) {
 		updateBG();
 	}
 	//checkInput();
+}
+
+void checkBonuses(){
+	if (map1[21] == map1[22] && map1[22] == map1[23] && map1[23] == map1[24] && map1[26] != 21) {
+		map1[26] = 21;
+		cgbmap1[26] = 0x00;
+		bonus(2);
+	}
+	else if (map1[41] == map1[42] && map1[42] == map1[43] && map1[43] == map1[44] && map1[46] != 21) {
+		map1[46] = 21;
+		cgbmap1[46] = 0x00;
+		bonus(4);
+	}
+	else if (map1[61] == map1[62] && map1[62] == map1[63] && map1[63] == map1[64] && map1[66] != 21) {
+		map1[66] = 21;
+		cgbmap1[66] = 0x00;
+		bonus(3);
+	}
+	else if (map1[81] == map1[82] && map1[82] == map1[83] && map1[83] == map1[84] && map1[86] != 21) {
+		map1[86] = 21;
+		cgbmap1[86] = 0x00;
+		bonus(9);
+	}
+	else if (map1[21] == map1[42] && map1[42] == map1[63] && map1[63] == map1[84] && map1[126] != 21) {
+		map1[126] = 21;
+		cgbmap1[126] = 0x00;
+		bonus(10);
+	}
+	else if (map1[30] == map1[31] && map1[31] == map1[32] && map1[34] != 21) {
+		map1[34] = 21;
+		cgbmap1[34] = 0x00;
+		bonus(5);
+	}
+	else if (map1[49] == map1[50] && map1[50] == map1[51] && map1[51] == map1[52] && map1[54] != 21) {
+		map1[54] = 21;
+		cgbmap1[54] = 0x00;
+		bonus(1);
+	}
+	else if (map1[69] == map1[70] && map1[70] == map1[71] && map1[71] == map1[72] && map1[74] != 21) {
+		map1[74] = 21;
+		cgbmap1[74] = 0x00;
+		bonus(9);
+	}
+	else if (map1[49] == map1[69] && map1[109] != 21) {
+		map1[109] = 21;
+		cgbmap1[109] = 0x00;
+		bonus(11);
+	}
+	else if (map1[30] == map1[50] && map1[50] == map1[70] && map1[110] != 21) {
+		map1[110] = 21;
+		cgbmap1[110] = 0x00;
+		bonus(3);
+	}
+	else if (map1[31] == map1[51] && map1[51] == map1[71] && map1[111] != 21) {
+		map1[111] = 21;
+		cgbmap1[111] = 0x00;
+		bonus(7);
+	}
+	else if (map1[32] == map1[52] && map1[52] == map1[72] && map1[112] != 21) {
+		map1[112] = 21;
+		cgbmap1[112] = 0x00;
+		bonus(10);
+	}
+	else if (map1[186] != 60 && map1[176] != 21){
+		map1[176] = 21;
+		cgbmap1[176] = 0x00;
+		bonus(10);
+	}
+	else if (map1[188] != 61 && map1[177] != 21){
+		map1[177] = 21;
+		cgbmap1[177] = 0x00;
+		bonus(2);
+	}
+	else if (map1[189] != 62 && map1[178] != 21){
+		map1[178] = 21;
+		cgbmap1[178] = 0x00;
+		bonus(9);
+	}
+	else if (map1[191] != 60 && map1[179] != 21){
+		map1[179] = 21;
+		cgbmap1[179] = 0x00;
+		bonus(7);
+	}
+	else if (map1[192] != 63 && map1[196] != 21){
+		map1[196] = 21;
+		cgbmap1[196] = 0x00;
+		bonus(11);
+	}
+	else if (map1[245] != 59 && map1[236] != 21){
+		map1[236] = 21;
+		cgbmap1[236] = 0x00;
+		bonus(11);
+	}
+	else if (map1[247] != 59 && map1[237] != 21){
+		map1[237] = 21;
+		cgbmap1[237] = 0x00;
+		bonus(1);
+	}
+	else if (map1[248] != 59 && map1[238] != 21){
+		map1[238] = 21;
+		cgbmap1[238] = 0x00;
+		bonus(10);
+	}
+	else if (map1[250] != 59 && map1[239] != 21){
+		map1[239] = 21;
+		cgbmap1[239] = 0x00;
+		bonus(9);
+	}
+	else if (map1[252] != 59 && map1[256] != 21){
+		map1[256] = 21;
+		cgbmap1[256] = 0x00;
+		bonus(7);
+	}
+	else if (map1[305] != 59 && map1[296] != 21){
+		map1[296] = 21;
+		cgbmap1[296] = 0x00;
+		bonus(11);
+	}
+	else if (map1[306] != 59 && map1[297] != 21){
+		map1[297] = 21;
+		cgbmap1[297] = 0x00;
+		bonus(2);
+	}
+	else if (map1[307] != 59 && map1[298] != 21){
+		map1[298] = 21;
+		cgbmap1[298] = 0x00;
+		bonus(10);
+	}
+	else if (map1[308] != 59 && map1[299] != 21){
+		map1[299] = 21;
+		cgbmap1[299] = 0x00;
+		bonus(1);
+	}
+	else if (map1[309] != 59 && map1[316] != 21){
+		map1[316] = 21;
+		cgbmap1[316] = 0x00;
+		bonus(9);
+	}
+	else if (map1[310] != 59 && map1[317] != 21){
+		map1[317] = 21;
+		cgbmap1[317] = 0x00;
+		bonus(11);
+	}
+	else if (map1[311] != 59 && map1[318] != 21){
+		map1[318] = 21;
+		cgbmap1[318] = 0x00;
+		bonus(3);
+	}
+	else if (map1[312] != 59 && map1[319] != 21){
+		map1[319] = 21;
+		cgbmap1[319] = 0x00;
+		bonus(6);
+	}
+	else if (map1[313] != 59 && map1[336] != 21){
+		map1[336] = 21;
+		cgbmap1[336] = 0x00;
+		bonus(10);
+	}
+	//updateBG();
 }
