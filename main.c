@@ -439,22 +439,24 @@ void checkInput() {
 			}
 		}
 		else if (cgbmap1[temp] == 4 || whitemode == 4) { //green
+			temp4 = 0;
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
 				rcur[1] = 24;
 			}
 			for (temp2 = 0; temp2 < 11; temp2++){
+				map1[0] = g_array[temp2];
 				if ((int)g_array[temp2] > (int)die2Num(temp)) {
-					if (whitemode == 4) {
+					if (map1[187] == 0x37 || temp2 > 4){
+						if (whitemode == 4) {
+							curDel = 0;
+							whitemode = 0;
+							break;
+						}
 						curDel = 0;
-						whitemode = 0;
-						return;
+						selectmode = 0;
+						break;
 					}
-					/*map1[0] = g_array[temp2];
-					map1[1] = die2Num(temp);*/
-					curDel = 0;
-					selectmode = 0;
-					return;
 				}
 				if (map1[183+temp2] != 0x16 && map1[183+temp2] != 0x17 && map1[183+temp2] != 0x18 && map1[183+temp2] != 0x19 && map1[183+temp2] != 0x1A && map1[183+temp2] != 0x1B){
 					temp3 = (cur[0]+17)+(20*(cur[1]+1));
@@ -873,7 +875,10 @@ void shuffle(unsigned char *array, UINT8 n) {
 }
 
 void newRound(){
+	rcur[0] = 0;
+	rcur[1] = 0;
 	/*map1[0] = 0x15;*/
+	if (opUsed == 1){opUsed = 0;}
 	for (temp2 = 0; temp2 < 3; temp2++){
 		temp4 = 39+(20*temp2);
 		map1[temp4] = 0x48;
@@ -900,7 +905,6 @@ void newRound(){
 
 	infoTrack[0]++;
 	updateBG();
-	if (opUsed == 1){opUsed = 0;}
 }
 
 void updateBG(){
