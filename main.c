@@ -1,5 +1,4 @@
-//TODO: +1 during your turn
-//TODO: limit selection to left side during opp mode unless you can't play anything
+//TODO: Bug testing and fixes!
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -40,6 +39,11 @@ UINT8 selectmode = 0;
 UINT8 temparr[];
 unsigned int seed;
 UINT8 winActive = 0;
+
+UINT8 unhiddenDice[] = 
+{
+	0,0,0,0,0,0
+};
 
 const unsigned char diceArray[] = 
 {
@@ -129,6 +133,11 @@ void bonus(int type);
 void checkBonuses();
 UINT8 getScore(UINT8 zone);
 UINT8 scoreAssist(unsigned char tile);
+void checkMoveBack();
+void showPlusOnes();
+void hidePlusOnes();
+UINT8 num2Die(unsigned char num);
+UINT8 checkLegal();
 
 void main() {
 	map1[340] = 21;
@@ -210,11 +219,6 @@ void moveCursor() { //This is used to handle moving in the dice selector, and no
 }
 
 void checkInput() {
-	if (cur[1] == 3 && cur[0] == 2) {
-			cur[0] = curtemp[0];
-			cur[1] = curtemp[1];
-			moveCursor();
-		}	
 	//Don't allow the joypad to be used again until you let go of a button
 	if (!joypad()) {
 		curDel = 0;
@@ -222,7 +226,7 @@ void checkInput() {
 	}
 	if (selectmode == 0){
 		if (curDel == 0) {
-			if (joypad() & J_DOWN) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
+			if (joypad() & J_DOWN && infoTrack[0] != 11) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
 				clearCursor();
 				if (cur[1] < 5) {
 					cur[1]++;
@@ -235,7 +239,7 @@ void checkInput() {
 				}
 				moveCursor();
 			}
-			if (joypad() & J_UP) {
+			if (joypad() & J_UP && infoTrack[0] != 11) {
 				clearCursor();
 				if (cur[1] > 0) {
 					cur[1]--;
@@ -248,7 +252,7 @@ void checkInput() {
 				}
 				moveCursor();
 			}
-			if (joypad() & J_RIGHT) {
+			if (joypad() & J_RIGHT && infoTrack[0] != 11) {
 				if (cur[1] == 3) {
 					return;
 				}
@@ -261,7 +265,7 @@ void checkInput() {
 				}
 				moveCursor();
 			}
-			if (joypad() & J_LEFT) {
+			if (joypad() & J_LEFT && infoTrack[0] != 11) {
 				if (cur[1] == 3) {
 					return;
 				}
@@ -275,7 +279,7 @@ void checkInput() {
 				moveCursor();
 			}
 			temp = (cur[0]+17)+(20*(cur[1]+1));
-			if (joypad() & J_A) {
+			if (joypad() & J_A && infoTrack[0] != 11) {
 				if (cur[0] == 2 && cur[1] == 5 && infoTrack[2] > 0 && infoTrack[0] % 2 != 0) {
 					infoTrack[2]--;
 					reroll();
@@ -283,6 +287,10 @@ void checkInput() {
 				else if (cur[0] == 2 && cur[1] == 4 && infoTrack[1] > 0  && plusOne == 0) {
 					infoTrack[1]--;
 					plusOne = 1;
+					if ((infoTrack[0]+1)%2 != 1){
+						//map1[1]++;
+						showPlusOnes();
+					}
 					updateBG();
 				}
 				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
@@ -292,7 +300,7 @@ void checkInput() {
 				{
 					return;
 				}
-				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && cur[0] == 2 && map1[temp] != 0x48) {
+				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && cur[0] == 2 && map1[temp] != 0x48 && checkLegal() == 1) {
 					selectmode = 1;
 				}
 				else if (cur[0] == 0 && map1[temp] != 0x48){
@@ -302,10 +310,11 @@ void checkInput() {
 			}
 			if (joypad() & J_START) {
 				opRound = 0;
-				newRound();
 				curDel = 1;
+				newRound();
 			}
 			if (joypad() & J_SELECT) {
+				curDel = 1;
 			}
 		}
 	}
@@ -380,6 +389,7 @@ void checkInput() {
 					whitemode = 0;
 					reroll();
 					bonusRun = 0;
+					checkMoveBack();
 					updateBG();
 				}
 				//end yellow handling
@@ -461,6 +471,7 @@ void checkInput() {
 					whitemode = 0;
 					reroll();
 					bonusRun = 0;
+					checkMoveBack();
 					updateBG();
 				}
 			}
@@ -476,17 +487,22 @@ void checkInput() {
 				rcur[1] = 24;
 			}
 			for (temp2 = 0; temp2 < 11; temp2++){
-				//map1[0map1[0] = g_array[temp2];
+				map1[1] = g_array[temp2];
+				map1[2] = die2Num(temp);
+				map1[1] = 1;
+				map1[2] = 1;
+				updateBG();
+				delay(5);
 				if ((int)g_array[temp2] > (int)die2Num(temp)) {
 					if ((map1[187] == 0x37 || temp2 > 4) && bonusRun == 0){
 						if (whitemode == 4) {
 							curDel = 0;
 							whitemode = 0;
-							break;
+							return;
 						}
 						curDel = 0;
 						selectmode = 0;
-						break;
+						return;
 					}
 				}
 				if (map1[183+temp2] != 0x16 && map1[183+temp2] != 0x17 && map1[183+temp2] != 0x18 && map1[183+temp2] != 0x19 && map1[183+temp2] != 0x1A && map1[183+temp2] != 0x1B){
@@ -521,6 +537,7 @@ void checkInput() {
 					infoTrack[4]++;
 					map1[181] = bignum2Tile(g_prog[infoTrack[4]]);
 					map1[182] = bignum2Tile(g_prog[infoTrack[4]+1]);
+					checkMoveBack();
 					updateBG();
 					pickDie();
 					reroll();
@@ -583,6 +600,7 @@ void checkInput() {
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
+					checkMoveBack();
 					updateBG();
 					pickDie();
 					reroll();
@@ -648,6 +666,7 @@ void checkInput() {
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
+					checkMoveBack();
 					updateBG();
 					pickDie();
 					reroll();
@@ -755,12 +774,18 @@ void checkInput() {
 }
 
 void reroll() {
+	curDel = 1;
 	if (bonusRun != 0){
 		return;}
-	if (opUsed == 1) 
+	if (opUsed == 1 && plusOne == 0) 
 	{
 		//newRound();
 		opUsed = 0;
+	}
+	else if (plusOne == 1){
+		plusOne = 0;
+		hidePlusOnes();
+		return;
 	}
 	else if (infoTrack[0] % 2 == 0) {
 		return;
@@ -900,7 +925,12 @@ void pickDie() {
 	if (infoTrack[0] % 2 != 1 && plusOne == 0) {
 		return;
 	}
-	plusOne = 0;
+	else if (infoTrack[0] % 2 == 1 && plusOne == 1){
+		hidePlusOnes();
+		updateBG();
+		return;
+	}
+	//plusOne = 0;
 	temp = (cur[0]+17)+(20*(cur[1]+1));
 	temp3 = 0;
 	temp5 = 0;
@@ -945,13 +975,14 @@ void newRound(){
 	rcur[0] = 0;
 	rcur[1] = 0;
 	/*map1[0] = 0x15;*/
-	if (opUsed == 1){opUsed = 0;}
+	if (opUsed == 1 && plusOne == 0){opUsed = 0;}
 	for (temp2 = 0; temp2 < 3; temp2++){
 		temp4 = 39+(20*temp2);
 		map1[temp4] = 0x48;
 		cgbmap1[temp4] = 0x00;
 		usedDiceValues[temp2] = 0xFF;
 	}
+	plusOne = 0;
 	temp3 = (infoTrack[0])/2;
 	map1[(int)temp3+340] = 0x15;
 	switch (infoTrack[0]) {
@@ -1080,6 +1111,29 @@ UINT8 die2Num(unsigned char die){
 			break;
 		case 69:
 			return 6;
+			break;
+	}
+}
+
+UINT8 num2Die(unsigned char num){
+	switch (num) {
+		case 1:
+			return 64;
+			break;
+		case 2:
+			return 65;
+			break;
+		case 3:
+			return 66;
+			break;
+		case 4:
+			return 67;
+			break;
+		case 5:
+			return 68;
+			break;
+		case 6:
+			return 69;
 			break;
 	}
 }
@@ -1269,6 +1323,7 @@ void bonus(int type) {
 	curtemp[1] = cur[1];
 	cur[0] = 2;
 	cur[1] = 3;
+	clearCursor();
 	bonusRun = type;
 	selectmode = 1;
 	}
@@ -1617,5 +1672,132 @@ const UINT8 scoreAssist(unsigned char tile) {
 		default:
 			return 0;
 			break;		
+	}
+}
+
+void checkMoveBack(){
+	if (cur[1] == 3 && cur[0] == 2) {
+		cur[0] = curtemp[0];
+		cur[1] = curtemp[1];
+		moveCursor();
+	}
+}
+
+void showPlusOnes(){
+	winActive = 1;
+	for (temp5 = 0; temp5 < 6; temp5++)
+	{
+		//map1[temp5+1] = num2Die(diceValues[temp5]+1);
+		if (map1[37 + temp5*20] == 72) {
+			unhiddenDice[temp5] = 1;
+			map1[37 + temp5*20] = num2Die(diceValues[temp5]+1);
+		}
+	}
+}
+
+void hidePlusOnes(){
+	winActive = 0;
+	for (temp5 = 0; temp5 < 6; temp5++)
+	{
+		//map1[temp5+1] = num2Die(diceValues[temp5]+1);
+		if (unhiddenDice[temp5] == 1) {
+			unhiddenDice[temp5] = 0;
+			map1[37 + temp5*20] = 72;
+		}
+	}
+}
+
+UINT8 checkLegal(){
+	tempint = 0;
+	for (temp5 = 0; temp5 < 3; temp5++)
+	{
+		temp4 = die2Num(37+(temp5*20));
+		temp3 = cgbmap1[37+(temp5*20)];
+		switch (temp3){
+			case 0:
+				//check white
+				temp6 = 0;
+				if (map1[253] == 20 && map1[313] == 20 && map1[193] == 20)
+				{
+					if (scoreAssist(map1[29]) == 2 && map1[30] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 3 && map1[31] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 4 && map1[32] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 5 && map1[49] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 6 && map1[50] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 7 && map1[51] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 8 && map1[52] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 9 && map1[69] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 10 && map1[70] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 11 && map1[71] == 20){temp6++;}
+					else if (scoreAssist(map1[29]) == 12 && map1[72] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 1 && map1[42] == 20 && map1[61] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 2 && map1[41] == 20 && map1[63] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 3 && map1[21] == 20 && map1[82] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 4 && map1[83] == 20 && map1[64] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 5 && map1[23] == 20 && map1[44] == 20){temp6++;}
+					else if (die2Num(39+(temp5*20)) == 6 && map1[22] == 20 && map1[84] == 20){temp6++;}		
+				}
+				if (temp6 != 0){tempint++;}
+				break;
+			case 1:
+				//check blue
+				temp6 = 0;
+				if (scoreAssist(map1[29]) == 2 && map1[30] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 3 && map1[31] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 4 && map1[32] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 5 && map1[49] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 6 && map1[50] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 7 && map1[51] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 8 && map1[52] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 9 && map1[69] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 10 && map1[70] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 11 && map1[71] == 20){temp6++;}
+				else if (scoreAssist(map1[29]) == 12 && map1[72] == 20){temp6++;}
+				if (temp6 != 0){tempint++;}
+				break;
+			case 2:
+				//check orange 
+				if (map1[253] == 20){tempint++;}
+				break;
+			case 3:
+				//check purple
+				if (map1[313] == 20){tempint++;}
+				else if (prevPurp >= die2Num(39+(temp5*20))) {tempint++;}
+				break;
+			case 4:
+				//check green
+				temp6 = 0;
+				if (map1[193] == 20){tempint++;}
+				else if (map1[183] == 51 && die2Num(39+(temp5*20)) < 1){temp6++;}
+				else if (map1[184] == 52 && die2Num(39+(temp5*20)) < 2){temp6++;}
+				else if (map1[185] == 53 && die2Num(39+(temp5*20)) < 3){temp6++;}
+				else if (map1[186] == 60 && die2Num(39+(temp5*20)) < 4){temp6++;}
+				else if (map1[187] == 55 && die2Num(39+(temp5*20)) < 5){temp6++;}
+				else if (map1[188] == 61 && die2Num(39+(temp5*20)) < 1){temp6++;}
+				else if (map1[189] == 62 && die2Num(39+(temp5*20)) < 2){temp6++;}
+				else if (map1[190] == 53 && die2Num(39+(temp5*20)) < 3){temp6++;}
+				else if (map1[191] == 60 && die2Num(39+(temp5*20)) < 4){temp6++;}
+				else if (map1[192] == 63 && die2Num(39+(temp5*20)) < 5){temp6++;}
+				else if (map1[193] == 56 && die2Num(39+(temp5*20)) < 6){temp6++;}
+				if (temp6 != 0){tempint++;}
+				break;
+			case 5:
+				temp6 = 0;
+				if (die2Num(39+(temp5*20)) == 1 && map1[42] == 20 && map1[61] == 20){temp6++;}
+				else if (die2Num(39+(temp5*20)) == 2 && map1[41] == 20 && map1[63] == 20){temp6++;}
+				else if (die2Num(39+(temp5*20)) == 3 && map1[21] == 20 && map1[82] == 20){temp6++;}
+				else if (die2Num(39+(temp5*20)) == 4 && map1[83] == 20 && map1[64] == 20){temp6++;}
+				else if (die2Num(39+(temp5*20)) == 5 && map1[23] == 20 && map1[44] == 20){temp6++;}
+				else if (die2Num(39+(temp5*20)) == 6 && map1[22] == 20 && map1[84] == 20){temp6++;}
+				if (temp6 != 0){tempint++;}
+				break;
+
+		}
+	}
+	if (tempint >= 3){
+		return 1;
+	}
+	else{
+		return 0;
 	}
 }
