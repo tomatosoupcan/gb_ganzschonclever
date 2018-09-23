@@ -1,5 +1,6 @@
 //TODO: Bug testing and fixes!
 //TODO: add music and sound effects
+//TODO: there is an issue with selecting purple on the bonus round
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -1763,7 +1764,7 @@ UINT8 checkLegal(){
 			case 3:
 				//check purple
 				if (map1[313] == 20){tempint++;}
-				else if (prevPurp >= die2Num(39+(temp5*20))) {tempint++;}
+				else if (prevPurp >= die2Num(39+(temp5*20)) || prevPurp == 6) {tempint++;}
 				break;
 			case 4:
 				//check green
