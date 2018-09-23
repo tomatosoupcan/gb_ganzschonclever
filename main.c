@@ -1,7 +1,6 @@
 //TODO: +1 during your turn
-//TODO: scoring for each section
-//TODO: fox scoring
 //TODO: limit selection to left side during opp mode unless you can't play anything
+//TODO: final scoring
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -37,6 +36,7 @@ UINT8 prevPurp;
 UINT8 curDel;
 UINT8 infoTrack[6];
 UINT8 selectmode = 0;
+UINT8 temparr[];
 unsigned int seed;
 
 const unsigned char diceArray[] = 
@@ -125,6 +125,8 @@ UINT8 bignum2Tile(unsigned char num);
 void midrollDice();
 void bonus(int type);
 void checkBonuses();
+UINT8 getScore(UINT8 zone);
+UINT8 scoreAssist(unsigned char tile);
 
 void main() {
 	map1[340] = 21;
@@ -567,6 +569,8 @@ void checkInput() {
 						case 6:
 							temp10 = 0x1B;
 							break;
+						case 8:
+							temp10 = 0x1B;
 						default:
 							break;
 					}
@@ -1034,6 +1038,9 @@ UINT8 tile2Num(unsigned char tile){
 		case 34:
 			return 12;
 			break;
+		default:
+			return 0;
+			break;
 	}
 }
 
@@ -1249,7 +1256,24 @@ void bonus(int type) {
 	selectmode = 1;
 	}
 	else if (type == 9){
-		//loop through check scores, and then take the lowest and add it to the score
+		temparr[0] = getScore(1);
+		temparr[1] = getScore(2);
+		temparr[2] = getScore(3);
+		temparr[3] = getScore(4);
+		temparr[4] = getScore(5);
+		tempint = 0;
+		for (temp5 = 0; temp5 < 5; temp5++){
+			if (temp5 == 0){
+				tempint = temparr[temp5];
+			}
+			else {
+				if (temparr[temp5]<tempint){
+					tempint = temparr[temp5];
+				}
+			}
+		}
+		
+		infoTrack[3]+=tempint; //increment the score by the lowest section
 	}
 	else if (type == 10){
 		curDel = 1;
@@ -1420,5 +1444,161 @@ void checkBonuses(){
 		cgbmap1[336] = 0x00;
 		bonus(10);
 	}
-	//updateBG();
+	updateBG();
+}
+
+UINT8 getScore(UINT8 zone) {
+	temp5 = 0;
+	switch (zone) {
+		case 1: //yellow
+			if (map1[21] == map1[41] && map1[41] == map1[61] && map1[61] == map1[81]) {
+				temp5+=10;
+			}
+			if (map1[22] == map1[42] && map1[42] == map1[62] && map1[62] == map1[82]) {
+				temp5+=14;
+			}
+			if (map1[23] == map1[43] && map1[43] == map1[63] && map1[63] == map1[83]) {
+				temp5+=16;
+			}
+			if (map1[24] == map1[44] && map1[44] == map1[64] && map1[64] == map1[84]) {
+				temp5+=20;
+			}
+			return temp5;
+		case 2: //blue
+			return scoreAssist(map1[133]);
+		case 3: //green
+			return scoreAssist(map1[181]);
+		case 4: //orange
+			for (temp4 = 0; temp4 < 11; temp4++){
+				if (temp4 == 3 || temp4 == 6 || temp4 == 8){
+					temp5+=(tile2Num(temp4+243))*2;
+				}
+				else if (temp4 == 10) {
+					temp5+=(tile2Num(temp4+243))*3;
+				}
+				else {
+					temp5+=tile2Num(temp4+243);
+				}
+			}	
+			return temp5;	
+		case 5: //purple
+			for (temp4 = 0; temp4 < 11; temp4++) {
+				switch (map1[303+temp4]){
+					case 22:
+						temp5+=1;
+						break;
+					case 23:
+						temp5+=2;
+						break;
+					case 24:
+						temp5+=3;
+						break;
+					case 25:
+						temp5+=4;
+						break;
+					case 26:
+						temp5+=5;
+						break;
+					case 27:
+						temp5+=6;
+						break;
+					default:
+						temp5+=0;
+						break;
+				}
+			}
+			return temp5;
+	}
+}
+
+const UINT8 scoreAssist(unsigned char tile) {
+	switch (tile) {
+		case 37:
+			return 1;
+			break;
+		case 38:
+			return 2;
+			break;
+		case 39:
+			return 4;
+			break;
+		case 40:
+			return 7;
+			break;
+		case 41:
+			return 11;
+			break;
+		case 42:
+			return 16;
+			break;
+		case 43:
+			return 22;
+			break;
+		case 44:
+			return 29;
+			break;
+		case 45:
+			return 37;
+			break;
+		case 46:
+			return 46;
+			break;
+		case 47:
+			return 56;
+			break;
+		case 48:
+			return 0;
+			break;	
+		case 12:
+			return 10;
+			break;
+		case 13:
+			return 14;
+			break;
+		case 15:
+			return 20;
+			break;
+		case 78:
+			return 3;
+			break;	
+		case 79:
+			return 5;
+			break;	
+		case 80:
+			return 6;
+			break;	
+		case 83:
+			return 15;
+			break;	
+		case 84:
+			return 21;
+			break;	
+		case 85:
+			return 28;
+			break;
+		case 86:
+			return 36;
+			break;	
+		case 87:
+			return 45;
+			break;	
+		case 88:
+			return 55;
+			break;	
+		case 89:
+			return 66;
+			break;			
+		case 114:
+			return 8;
+			break;	
+		case 115:
+			return 9;
+			break;
+		case 116:
+			return 12;
+			break;
+		default:
+			return 0;
+			break;		
+	}
 }
