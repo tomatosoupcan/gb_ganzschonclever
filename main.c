@@ -1,4 +1,5 @@
 //TODO: Bug testing and fixes!
+//TODO: add music and sound effects
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
