@@ -1,6 +1,5 @@
 //TODO: +1 during your turn
 //TODO: limit selection to left side during opp mode unless you can't play anything
-//TODO: fix the issue with chaining bonuses
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -211,17 +210,17 @@ void moveCursor() { //This is used to handle moving in the dice selector, and no
 }
 
 void checkInput() {
+	if (cur[1] == 3 && cur[0] == 2) {
+			cur[0] = curtemp[0];
+			cur[1] = curtemp[1];
+			moveCursor();
+		}	
 	//Don't allow the joypad to be used again until you let go of a button
 	if (!joypad()) {
 		curDel = 0;
 		checkBonuses();
 	}
 	if (selectmode == 0){
-		if (cur[1] == 3 && cur[0] == 2) {
-			cur[0] = curtemp[0];
-			cur[1] = curtemp[1];
-			moveCursor();
-		}	
 		if (curDel == 0) {
 			if (joypad() & J_DOWN) { //All of these move the cursor in the dice selector, will need to break this down further once more movement and sprites come into play
 				clearCursor();
