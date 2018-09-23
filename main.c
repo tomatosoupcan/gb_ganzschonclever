@@ -1,6 +1,6 @@
 //TODO: +1 during your turn
 //TODO: limit selection to left side during opp mode unless you can't play anything
-//TODO: final scoring
+//TODO: fix the issue with chaining bonuses
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -12,6 +12,7 @@
 #include "rand.h"
 #include "sprite1.c"
 #include "window.c"
+//#include "windowtiles.c"
 
 UINT8 cur[2];
 UINT8 curtemp[2];
@@ -29,6 +30,7 @@ UINT8 opRound = 0;
 UINT8 plusOne = 0;
 UINT8 opUsed = 0;
 UINT8 bonusRun = 0;
+UINT8 individualscore[3];
 int tempint;
 unsigned char temp10;
 unsigned char temp11;
@@ -38,6 +40,7 @@ UINT8 infoTrack[6];
 UINT8 selectmode = 0;
 UINT8 temparr[];
 unsigned int seed;
+UINT8 winActive = 0;
 
 const unsigned char diceArray[] = 
 {
@@ -145,6 +148,9 @@ void main() {
 }
 
 void init() {
+	HIDE_WIN;
+	set_win_tiles(0,0,20,4, window);
+	move_win(7,112);
 	curDel = 1; //set the cursor lock
 	set_bkg_palette(0, 8, bkg_palette); //load the pallets
 	VBK_REG = 1; //switch to color map
@@ -176,7 +182,6 @@ void init() {
 
 void updateSwitches() { //show just the background for now, will need a sprite and window eventually
 	
-	HIDE_WIN;
 	SHOW_BKG;
 	
 }
@@ -302,7 +307,6 @@ void checkInput() {
 				curDel = 1;
 			}
 			if (joypad() & J_SELECT) {
-				//used for testing individual functions
 			}
 		}
 	}
@@ -963,6 +967,11 @@ void newRound(){
 			break;
 		case 10:
 			//show the score here
+			set_win_tiles(0,0,20,4, window);
+			SHOW_WIN;
+			break;
+		case 11:
+			//show the score here
 			HIDE_BKG;
 			curDel = 1;
 			for (tempint = 0; tempint < 359; tempint++){
@@ -992,6 +1001,15 @@ void newRound(){
 }
 
 void updateBG(){
+	temp5 = infoTrack[3] + getScore(1) + getScore(2) + getScore(3) + getScore(4) + getScore(5);
+	individualscore[0] = (int)temp5/100;
+	individualscore[1] = (int)(temp5-individualscore[0]*100)/10;
+	individualscore[2] = (int)(temp5-individualscore[0]*100-individualscore[1]*10);
+	window[32] = bignum2Tile(individualscore[0]);
+	window[33] = bignum2Tile(individualscore[1]);
+	window[34] = bignum2Tile(individualscore[2]);
+
+
 	map1[350] = bignum2Tile(infoTrack[1]);
 	map1[353] = bignum2Tile(infoTrack[2]);
 	VBK_REG = 1;
