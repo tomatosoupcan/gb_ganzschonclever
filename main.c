@@ -1,6 +1,5 @@
 //TODO: Bug testing and fixes!
-//TODO: add music and sound effects
-//TODO: there is an issue with selecting purple on the bonus round
+//TODO: add music
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -140,6 +139,7 @@ void showPlusOnes();
 void hidePlusOnes();
 UINT8 num2Die(unsigned char num);
 UINT8 checkLegal();
+void playSound(UINT8 sound);
 
 void main() {
 	map1[340] = 21;
@@ -295,11 +295,13 @@ void checkInput() {
 					}
 					updateBG();
 				}
-				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0) {
+				else if (map1[39] != 72 && map1[59] != 72 && map1[79] != 72 && infoTrack[0] % 2 != 0 && plusOne == 0) {
+					playSound(2);
 					return;
 				}
 				else if (infoTrack[0] % 2 == 0 && opUsed == 0 && plusOne == 0)
 				{
+					playSound(2);
 					return;
 				}
 				else if (infoTrack[0] % 2 == 0 && cur[1] < 3 && cur[0] == 2 && map1[temp] != 0x48 && checkLegal() == 1) {
@@ -307,6 +309,9 @@ void checkInput() {
 				}
 				else if (cur[0] == 0 && map1[temp] != 0x48){
 					selectmode = 1;
+				}
+				else {
+					playSound(2);
 				}
 				curDel = 1;
 			}
@@ -317,6 +322,7 @@ void checkInput() {
 			}
 			if (joypad() & J_SELECT) {
 				curDel = 1;
+				//playSound(3);
 			}
 		}
 	}
@@ -379,7 +385,9 @@ void checkInput() {
 					if (die2Num(temp3) != tile2Num(temp2) && bonusRun == 0){
 						curDel = 0;
 						return;
+						playSound(2);
 					}
+					playSound(1);
 					HIDE_SPRITES;
 					pickDie();
 					selectmode = 0;
@@ -457,8 +465,10 @@ void checkInput() {
 				if (joypad() & J_A && map1[temp2] != 0x14) {
 					if (bwStore != tile2Num(temp2) && bonusRun == 0){
 						curDel = 0;
+						playSound(2);
 						return;
 					}
+					playSound(1);
 					HIDE_SPRITES;
 					pickDie();
 					selectmode = 0;
@@ -482,6 +492,7 @@ void checkInput() {
 			if (map1[193] != 56){
 				curDel = 0;
 				selectmode = 0;
+				playSound(2);
 				return;}
 			temp4 = 0;
 			if (rcur[0] == 0) {
@@ -500,10 +511,12 @@ void checkInput() {
 						if (whitemode == 4) {
 							curDel = 0;
 							whitemode = 0;
+							playSound(2);
 							return;
 						}
 						curDel = 0;
 						selectmode = 0;
+						playSound(2);
 						return;
 					}
 				}
@@ -533,6 +546,7 @@ void checkInput() {
 					map1[temp2+183] = temp10;
 					cgbmap1[temp2+183] = 0x00;
 					whitemode = 0;
+					playSound(1);
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
@@ -553,6 +567,7 @@ void checkInput() {
 			if (map1[253] != 58){
 				curDel = 0;
 				selectmode = 0;
+				playSound(2);
 				return;}
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
@@ -599,6 +614,7 @@ void checkInput() {
 					map1[temp2+243] = temp10;
 					cgbmap1[temp2+243] = 0x00;
 					whitemode = 0;
+					playSound(1);
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
@@ -616,6 +632,7 @@ void checkInput() {
 			if (map1[313] != 59){
 				curDel = 0;
 				selectmode = 0;
+				playSound(2);
 				return;}
 			if (rcur[0] == 0) {
 				rcur[0] = 88;
@@ -634,10 +651,12 @@ void checkInput() {
 						if (whitemode == 3) {
 							curDel = 0;
 							whitemode = 0;
+							playSound(2);
 							return;
 						}
 						curDel = 0;
 						selectmode = 0;
+						playSound(2);
 						return;
 					}
 
@@ -665,6 +684,7 @@ void checkInput() {
 					map1[temp2+303] = temp10;
 					cgbmap1[temp2+303] = 0x00;
 					whitemode = 0;
+					playSound(1);
 					HIDE_SPRITES;
 					rcur[0] = 0;
 					rcur[1] = 0;
@@ -1320,6 +1340,7 @@ void bonus(int type) {
 	//9 is fox
 	//10 is +1
 	//11 is reroll
+	playSound(3);
 	if (type < 9)
 	{curtemp[0] = cur[0];
 	curtemp[1] = cur[1];
@@ -1801,5 +1822,49 @@ UINT8 checkLegal(){
 	}
 	else{
 		return 0;
+	}
+}
+
+void playSound(UINT8 sound){
+	switch (sound){
+		case 1:
+			NR52_REG = 0x80;
+			NR51_REG = 0xFF;
+			NR50_REG = 0x77;
+
+			NR10_REG = 0x53;
+			NR11_REG = 0x84;
+			NR12_REG = 0x83;
+			NR13_REG = 0x57;
+			NR14_REG = 0x85;
+			break;
+		case 2:
+			NR52_REG = 0x80;
+			NR51_REG = 0xFF;
+			NR50_REG = 0x77;
+
+			NR10_REG = 0x28;
+			NR11_REG = 0x06;
+			NR12_REG = 0xA2;
+			NR13_REG = 0x50;
+			NR14_REG = 0x85;
+			delay(130);
+			NR10_REG = 0x28;
+			NR11_REG = 0x06;
+			NR12_REG = 0xA2;
+			NR13_REG = 0x50;
+			NR14_REG = 0x85;
+			break;
+		case 3:
+			NR52_REG = 0x80;
+			NR51_REG = 0x11;
+			NR50_REG = 0x77;
+
+			NR10_REG = 0x55;
+			NR11_REG = 0x0A;
+			NR12_REG = 0xA2;
+			NR13_REG = 0xEE;
+			NR14_REG = 0xC6;
+			break;
 	}
 }
