@@ -1,5 +1,4 @@
 //TODO: Bug testing and fixes!
-//TODO: add music
 
 #include <gb/gb.h>
 #include <gb/cgb.h>
@@ -13,6 +12,8 @@
 #include "window.c"
 //#include "windowtiles.c"
 
+UINT8 clock01=0;
+UINT8 musiccount=0;
 UINT8 cur[2];
 UINT8 curtemp[2];
 UINT8 rcur[2];
@@ -322,6 +323,7 @@ void checkInput() {
 			}
 			if (joypad() & J_SELECT) {
 				curDel = 1;
+				//playMusic();
 				//playSound(3);
 			}
 		}
